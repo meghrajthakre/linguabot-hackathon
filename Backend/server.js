@@ -40,8 +40,6 @@ app.use('/api/auth', authRoutes);
 // app.use('/api/analytics', analyticsRoutes);
 // app.use('/api/public/chat', publicRoutes);
 
-// Global error handler
-app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`🚀 LinguaBot backend running on http://localhost:${PORT}`);
