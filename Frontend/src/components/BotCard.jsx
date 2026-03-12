@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import ConfirmationModal from "../components/ConfirmationModal";
+import { URL } from "../constants/baseUrl";
 
 const LANGUAGE_COLORS = {
   english: "bg-blue-100 text-blue-700",
@@ -81,7 +82,7 @@ const BotCard = ({ bot, onDelete }) => {
     publicKey: "${bot.publicKey}"
   };
 </script>
-<script src="http://romantic-happiness-production-b369.up.railway.app/widget.js"><\/script>`;
+<script src="${URL}/widget.js"><\/script>`;
 
     navigator.clipboard.writeText(embedCode).then(() => {
       setEmbedCopied(true);
@@ -230,7 +231,7 @@ const BotCard = ({ bot, onDelete }) => {
                   publicKey: "${bot.publicKey}"
                 };
               </script>
-              <script src="http://romantic-happiness-production-b369.up.railway.app/widget.js"><\/script>`}
+              <script src="${URL}/widget.js"><\/script>`}
                 </div>
               </div>
 

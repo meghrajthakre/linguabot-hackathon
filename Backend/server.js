@@ -12,7 +12,6 @@ import publicRoutes from './routes/public.routes.js'
 import authRoutes from './routes/auth.routes.js';
 import botsRoutes from './routes/bots.routes.js';
 import chatRoutes from './routes/chat.routes.js';
-import analyticsRoutes from './routes/Analyticsroutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -52,7 +51,6 @@ app.use(express.static("public"));
 app.use('/api/auth', authRoutes);
 app.use('/api/bots', botsRoutes);
 app.use('/api/chat', chatRoutes);
-app.use('/api/analytics', analyticsRoutes);
 app.use('/api/public/chat', publicRoutes);
 
 // Global error handler

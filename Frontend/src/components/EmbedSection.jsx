@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Copy, Check, KeyRound, Code } from "lucide-react";
 import toast from "react-hot-toast";
+import { URL } from "../../../backend/utils/constants";
 
 const EmbedSection = ({ bot }) => {
   const [copied, setCopied] = useState(false);
@@ -10,7 +11,7 @@ const EmbedSection = ({ bot }) => {
     publicKey: "${bot.publicKey}"
   };
 </script>
-<script src="http://localhost:4000/widget.js"></script>`;
+<script src="${URL}/widget.js"></script>`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(embedCode);
