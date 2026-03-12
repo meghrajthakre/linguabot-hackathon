@@ -51,7 +51,6 @@ export const CreateBotForm = () => {
           faqs: cleanFaqs(),
           pricing: cleanPricing(),
           docs: formData.docs.trim(),
-          website: formData.website?.trim() || null, // ADD THIS
         };
 
         if (process.env.NODE_ENV === "development") {
@@ -64,18 +63,10 @@ export const CreateBotForm = () => {
           TIMINGS.API_TIMEOUT
         );
 
-        const response = await api.post("/bots", payload, { signal: controller.signal });
+        await api.post("/bots", payload, { signal: controller.signal });
         clearTimeout(timeoutId);
 
-        // ADD THIS: Handle auto-training response
-        const { trainingStarted } = response.data;
-
-        if (trainingStarted) {
-          toast.success("Bot created! Training website in background... 🚀");
-        } else {
-          toast.success("Bot created successfully! 🎉");
-        }
-
+        toast.success("Bot created successfully! 🎉");
         reset();
         navigate("/dashboard", { state: { botCreated: true } });
       } catch (error) {
@@ -184,16 +175,6 @@ export const CreateBotForm = () => {
                     onChange={handleChange}
                     error={errors.language}
                     options={LANGUAGES}
-                  />
-
-                  {/* ADD THIS: Website URL field */}
-                  <FormInput
-                    type="text"
-                    label="Website URL (optional)"
-                    name="website"
-                    value={formData.website || ""}
-                    onChange={handleChange}
-                    placeholder="https://example.com"
                   />
 
                   <FormInput
