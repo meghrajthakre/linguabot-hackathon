@@ -1,1 +1,28 @@
 @import "tailwindcss";
+
+body {
+  font-family: 'DM Sans', sans-serif;
+}
+/* ================= THEME COLOR ================= */
+:root {
+  --theme-color: #FACC15; /* tumhara yellow */
+  --theme-dark: #EAB308;
+}
+
+button {
+  cursor: pointer;
+}
+/* for confirmation embeded modal */
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.15s ease-out;
+}
+
+::selection {
+  background: var(--theme-color);
+  color: black;
+}

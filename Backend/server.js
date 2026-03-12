@@ -21,7 +21,6 @@ connectDB(process.env.MONGO_URI);
 // ========== CORS CONFIGURATION ==========
 // Allow multiple origins for development
 const allowedOrigins = [
-  "https://linguabot-xi.vercel.app",
   "http://localhost:5173",
   "http://localhost:3000",      // Alternative frontend port
   "http://localhost:8000",      // Another common port
@@ -33,19 +32,10 @@ const allowedOrigins = [
 ];
 
 
-app.use(
-  cors({
-    origin: [
-      "https://linguabot-xi.vercel.app",
-      "http://localhost:5500",
-      "http://127.0.0.1:5500"
-    ],
-    methods: ["GET", "POST"],
-    allowedHeaders: ["Content-Type", "x-public-key"],
-    credentials: true
-
-  })
-);
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
 // Middleware
 app.use(express.json()); // parse JSON body
 app.use(cookieParser());
