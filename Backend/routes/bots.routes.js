@@ -2,14 +2,11 @@ import express from "express";
 import authMiddleware from "../middleware/auth.middleware.js";
 import Bot from "../models/Bot.model.js";
 import { generatePublicKey } from "../utils/generatePublicKey.js";
-// ADD THIS: Import training service
-import { retrainBotOnWebsite, trainBotOnWebsite } from "../services/training.service.js";
-import { getTrainingStatus } from "../services/training.service.js";
 
 const router = express.Router();
 
 /* ===============================
-   CREATE BOT (WITH AUTO-TRAINING)
+   CREATE BOT
 ================================ */
 
 router.post("/", authMiddleware, async (req, res, next) => {
@@ -22,7 +19,6 @@ router.post("/", authMiddleware, async (req, res, next) => {
             pricing = [],
             docs = "",
             allowedDomains = [],
-            website,
         } = req.body;
 
         if (!name || !language) {
@@ -57,43 +53,20 @@ router.post("/", authMiddleware, async (req, res, next) => {
             docs,
             contentChunks,
             owner: req.user.id,
-            publicKey: generatePublicKey(),
+            publicKey: generatePublicKey(),   // 🔥 IMPORTANT
             allowedDomains,
-            website: website ? website.trim() : null,
-            websiteStatus: website ? "idle" : "idle",
         });
-
-        // ADD THIS: Auto-train if website provided
-        if (website && website.trim()) {
-            console.log(`🚀 Auto-training bot "${bot.name}" on ${website}`);
-            
-            // Start training asynchronously (don't wait)
-            trainBotOnWebsite(bot._id, website.trim())
-                .then(() => {
-                    console.log(`✅ Auto-training completed for bot "${bot.name}"`);
-                })
-                .catch((err) => {
-                    console.error(`❌ Auto-training failed for bot "${bot.name}":`, err.message);
-                    // Don't throw - bot was created successfully
-                    // User can check status and retry
-                });
-        }
 
         res.status(201).json({
             success: true,
             bot,
-            // ADD THIS: Include training info
-            trainingStarted: website ? true : false,
-            trainingMessage: website 
-                ? `Bot created successfully. Website training started in background. Check /train/status to monitor progress.`
-                : `Bot created successfully.`,
             embedCode: `
             <script>
             window.LinguaBotConfig = {
                 publicKey: "${bot.publicKey}"
             };
             </script>
-            <script src="https://localhost:4000/widget.js"></script>
+            <script src="https://yourdomain.com/widget.js"></script>
             `
         });
 
@@ -101,7 +74,6 @@ router.post("/", authMiddleware, async (req, res, next) => {
         next(err);
     }
 });
-
 /* ===============================
    GET ALL USER BOTS
 ================================ */
@@ -114,9 +86,7 @@ router.get("/", authMiddleware, async (req, res, next) => {
     }
 });
 
-/* ===============================
-   GET SINGLE BOT
-================================ */
+
 router.get("/:botId", authMiddleware, async (req, res, next) => {
     try {
         const bot = await Bot.findOne({
@@ -133,7 +103,6 @@ router.get("/:botId", authMiddleware, async (req, res, next) => {
         next(err);
     }
 });
-
 /* ===============================
    UPDATE BOT
 ================================ */
@@ -148,7 +117,7 @@ router.put("/:botId", authMiddleware, async (req, res, next) => {
             return res.status(404).json({ message: "Bot not found" });
         }
 
-        const { faqs = [], pricing = [], docs = "", website } = req.body;
+        const { faqs = [], pricing = [], docs = "" } = req.body;
 
         const contentChunks = [
             ...faqs.map(f => ({
@@ -164,28 +133,9 @@ router.put("/:botId", authMiddleware, async (req, res, next) => {
 
         Object.assign(bot, req.body, { contentChunks });
 
-        // ADD THIS: Handle website update
-        if (website && website.trim() && website.trim() !== bot.website) {
-            console.log(`🔄 Starting re-training for bot "${bot.name}" on new website`);
-            
-            // Start training asynchronously
-            trainBotOnWebsite(bot._id, website.trim())
-                .then(() => {
-                    console.log(`✅ Re-training completed for bot "${bot.name}"`);
-                })
-                .catch((err) => {
-                    console.error(`❌ Re-training failed for bot "${bot.name}":`, err.message);
-                });
-        }
-
         await bot.save();
 
-        res.json({ 
-            success: true, 
-            bot,
-            // ADD THIS: Notify if retraining started
-            retrainingStarted: website && website.trim() && website.trim() !== bot.website ? true : false,
-        });
+        res.json({ success: true, bot });
     } catch (err) {
         next(err);
     }
@@ -210,60 +160,5 @@ router.delete("/:id", authMiddleware, async (req, res, next) => {
         next(err);
     }
 });
-
-/**
- * get status of website training
- */
-
-router.get("/:botId/train/status", authMiddleware, async (req, res) => {
-  try {
-    const { botId } = req.params;
- 
-    const bot = await Bot.findById(botId);
-    if (!bot || bot.owner.toString() !== req.user.id) {
-      return res.status(403).json({ message: "Unauthorized" });
-    }
- 
-    const status = await getTrainingStatus(botId);
- 
-    res.json(status);
-  } catch (error) {
-    console.error("Status check error:", error);
-    res.status(500).json({ message: "Failed to get status" });
-  }
-});
-
-
-/**
- * Retrain on existing website
- */
-router.post("/:botId/train/retrain", authMiddleware, async (req, res) => {
-  try {
-    const { botId } = req.params;
- 
-    const bot = await Bot.findById(botId);
-    if (!bot || bot.owner.toString() !== req.user.id) {
-      return res.status(403).json({ message: "Unauthorized" });
-    }
- 
-    if (!bot.website) {
-      return res.status(400).json({ message: "No website configured" });
-    }
- 
-    // Start async retraining
-    retrainBotOnWebsite(botId).catch((err) => {
-      console.error("Async retraining failed:", err);
-    });
- 
-    res.json({
-      message: "Retraining started",
-      status: "training",
-    });
-  } catch (error) {
-    console.error("Retrain start error:", error);
-    res.status(500).json({ message: "Failed to start retraining" });
-  }
-});
- 
 
 export default router;

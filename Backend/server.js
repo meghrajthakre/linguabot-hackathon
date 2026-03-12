@@ -5,12 +5,14 @@ import cors from 'cors';
 import cookieParser from "cookie-parser";
 
 import connectDB from './config/db.js';
+import rateLimiter from './middleware/rateLimiter.middleware.js';
 import errorHandler from './middleware/errorHandler.middleware.js';
 
 import publicRoutes from './routes/public.routes.js'
 import authRoutes from './routes/auth.routes.js';
 import botsRoutes from './routes/bots.routes.js';
 import chatRoutes from './routes/chat.routes.js';
+import analyticsRoutes from './routes/Analyticsroutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -21,6 +23,7 @@ connectDB(process.env.MONGO_URI);
 // ========== CORS CONFIGURATION ==========
 // Allow multiple origins for development
 const allowedOrigins = [
+  "https://linguabot-xi.vercel.app",
   "http://localhost:5173",
   "http://localhost:3000",      // Alternative frontend port
   "http://localhost:8000",      // Another common port
@@ -33,23 +36,28 @@ const allowedOrigins = [
 
 
 app.use(cors({
-  origin: true,
-  credentials: true
+  origin: allowedOrigins,
+  methods:["GET","POST","PUT","DELETE"],
+  credentials:true
 }));
+
+
 // Middleware
 app.use(express.json()); // parse JSON body
 app.use(cookieParser());
+// app.use(rateLimiter); // global rate limiter
 
 // Register routes
 app.use(express.static("public"));
 app.use('/api/auth', authRoutes);
 app.use('/api/bots', botsRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/analytics', analyticsRoutes);
 app.use('/api/public/chat', publicRoutes);
 
 // Global error handler
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-  console.log(`🚀LinguaBot backend running on http://localhost:${PORT}`);
+  console.log(`🚀 LinguaBot backend running on http://localhost:${PORT}`);
 });

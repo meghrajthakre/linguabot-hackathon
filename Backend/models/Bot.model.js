@@ -13,12 +13,10 @@ const pricingSchema = new mongoose.Schema({
 
 const contentChunkSchema = new mongoose.Schema({
   type: {
-    type: String, // "faq" | "pricing" | "doc" | "website"
-    enum: ["faq", "pricing", "doc", "website"],
+    type: String, // "faq" | "pricing" | "doc"
+    enum: ["faq", "pricing", "doc"],
   },
   text: String,
-  source: String, // URL or section identifier
-  chunkIndex: Number, // Order of chunk
 });
 
 const botSchema = new mongoose.Schema(
@@ -50,27 +48,7 @@ const botSchema = new mongoose.Schema(
       default: "",
     },
 
-    // ADD THIS: Website Training Fields
-    website: {
-      type: String,
-      trim: true,
-    },
-
-    websiteStatus: {
-      type: String,
-      enum: ["idle", "training", "completed", "failed"],
-      default: "idle",
-    },
-
-    websiteLastTrained: {
-      type: Date,
-    },
-
-    websiteTrainingError: {
-      type: String,
-    },
-
-    // RAG Ready
+    // Future RAG Ready
     contentChunks: [contentChunkSchema],
 
     owner: {
@@ -84,30 +62,18 @@ const botSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-
     publicKey: {
       type: String,
       required: true,
       unique: true,
     },
 
-    pages: [
-      {
-        url: String,
-        content: String,
-      },
-    ],
-
     allowedDomains: [
       {
         type: String,
-      },
-    ],
+      }],
   },
   { timestamps: true }
 );
-
-// ADD THIS: Index for faster chunk searches
-contentChunkSchema.index({ text: "text" });
 
 export default mongoose.model("Bot", botSchema);
