@@ -167,7 +167,7 @@ const BotEditor = () => {
       await api.put(`/bots/${id}`, formData);
       setInitialData(formData);
       toast.success("Bot updated successfully ");
-      navigate('/')
+      navigate('/dashboard');
     } catch {
       toast.error("Update failed ❌");
     } finally {

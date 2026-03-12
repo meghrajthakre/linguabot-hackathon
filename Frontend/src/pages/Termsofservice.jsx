@@ -17,7 +17,7 @@ const TermsOfService = () => {
       <div className="bg-gradient-to-b from-white to-gray-50 border-b border-[#e8e0d0]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           <Link
-            to="/"
+            to="/dashboard"
             className="inline-flex items-center gap-2 text-yellow-600 hover:text-yellow-700 transition-colors mb-6"
           >
             <ArrowLeft size={18} />
