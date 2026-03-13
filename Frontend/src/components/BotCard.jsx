@@ -189,6 +189,7 @@ const BotCard = ({ bot, onDelete }) => {
             <Code size={16} />
             Get Embed Code
           </button>
+          
         </div>
 
         {/* FOOTER */}
@@ -246,8 +247,8 @@ const BotCard = ({ bot, onDelete }) => {
                 <button
                   onClick={handleCopyEmbed}
                   className={`flex-1 py-2 rounded-lg ${embedCopied
-                      ? "bg-green-500 text-white"
-                      : "bg-yellow-400 text-gray-900"
+                    ? "bg-green-500 text-white"
+                    : "bg-yellow-400 text-gray-900"
                     }`}
                 >
                   {embedCopied ? "✓ Copied" : "Copy Code"}

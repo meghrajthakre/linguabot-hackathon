@@ -67,6 +67,11 @@ const botSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    websiteURL:{
+      type: String,
+      
+    
+    },
 
     allowedDomains: [
       {

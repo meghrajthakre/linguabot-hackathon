@@ -9,25 +9,82 @@ if (!process.env.GEMINI_API_KEY) {
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Simple sleep for retry
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+/**
+ * Generate response using Gemini with website/bot context
+ * @param {string} userMessage - User's question
+ * @param {string} websiteContext - Content from website or bot data
+ * @param {string} systemPrompt - Custom system prompt for the bot
+ * @param {Array} contentChunks - Array of content chunks (FAQs, pricing, docs, website)
+ * @returns {Promise<string>} - AI-generated response
+ */
 export async function generateResponse(
   userMessage,
   websiteContext = "",
-  systemPrompt = ""
+  systemPrompt = "",
+  contentChunks = []
 ) {
   try {
+    // Build comprehensive context from all sources
+    let fullContext = "";
+
+    // Add content chunks in priority order
+    if (contentChunks && contentChunks.length > 0) {
+      const faqContent = contentChunks
+        .filter((c) => c.type === "faq")
+        .map((c) => c.text)
+        .join("\n");
+
+      const pricingContent = contentChunks
+        .filter((c) => c.type === "pricing")
+        .map((c) => c.text)
+        .join("\n");
+
+      const docContent = contentChunks
+        .filter((c) => c.type === "doc")
+        .map((c) => c.text)
+        .join("\n");
+
+      const websiteContent = contentChunks
+        .filter((c) => c.type === "website")
+        .map((c) => c.text)
+        .join("\n");
+
+      fullContext = `
+          === FREQUENTLY ASKED QUESTIONS ===
+          ${faqContent || "No FAQs provided"}
+
+          === PRICING INFORMATION ===
+          ${pricingContent || "No pricing information provided"}
+
+          === DOCUMENTATION ===
+          ${docContent || "No documentation provided"}
+
+          === WEBSITE INFORMATION ===
+          ${websiteContent || "No website information provided"}
+
+          === ADDITIONAL CONTEXT ===
+          ${websiteContext || "No additional context"}
+          `;
+    } else {
+      fullContext = websiteContext;
+    }
+
+    // Trim context to avoid token limits
+    const trimmedContext = fullContext.slice(0, 4000);
+
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash", 
-      systemInstruction: systemPrompt,
+      model: "gemini-2.5-flash",
+      systemInstruction:
+        systemPrompt ||
+        `You are a helpful AI assistant for a website. Answer questions based on the provided website content and information. 
+        Be concise, friendly, and informative. If you don't know the answer from the provided context, politely say so.`,
       generationConfig: {
         temperature: 0.3,
-        maxOutputTokens: 150,
+        maxOutputTokens: 200,
       },
     });
-
-    const trimmedContext = websiteContext.slice(0, 3000);
 
     const requestPayload = [
       { text: trimmedContext },
@@ -55,4 +112,21 @@ export async function generateResponse(
     console.error("Gemini Error:", error?.message || error);
     throw new Error("AI response failed");
   }
+}
+
+/**
+ * Quick response generator for simple queries
+ * @param {string} userMessage - User's question
+ * @param {string} botContext - Bot information/context
+ * @returns {Promise<string>} - AI-generated response
+ */
+export async function generateQuickResponse(
+  userMessage,
+  botContext = ""
+) {
+  return generateResponse(
+    userMessage,
+    botContext,
+    "You are a concise and helpful AI assistant. Answer briefly and directly."
+  );
 }

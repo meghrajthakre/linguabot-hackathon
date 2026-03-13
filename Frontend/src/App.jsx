@@ -65,6 +65,7 @@ const App = () => {
             <Route path="/create-bot" element={<CreateBot />} />
             <Route path="/bot/:id" element={<BotView />} />
             <Route path="/bot/:id/edit" element={<BotEditor />} />
+            {/* 🆕 Bot Details with Website Manager */}
 
             {/* Guides */}
             <Route path="/how-to-make-bot" element={<HowToMakeBot />} />

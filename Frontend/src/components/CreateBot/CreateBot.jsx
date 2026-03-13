@@ -15,7 +15,7 @@ import { ChatPreview } from "./ChatPreview";
 import { LANGUAGES, VALIDATION_RULES, TIMINGS } from "../../constants";
 
 /**
- * Main CreateBot Component
+ * Main CreateBot Component with Website Support
  */
 export const CreateBotForm = () => {
   const navigate = useNavigate();
@@ -44,10 +44,12 @@ export const CreateBotForm = () => {
       setLoading(true);
 
       try {
+        // BUILD PAYLOAD WITH WEBSITE
         const payload = {
           name: formData.name.trim(),
           description: formData.description.trim(),
           language: formData.language,
+          websiteURL: formData.website?.trim(),
           faqs: cleanFaqs(),
           pricing: cleanPricing(),
           docs: formData.docs.trim(),
@@ -63,12 +65,22 @@ export const CreateBotForm = () => {
           TIMINGS.API_TIMEOUT
         );
 
-        await api.post("/bots", payload, { signal: controller.signal });
+        const response = await api.post("/bots", payload, {
+          signal: controller.signal,
+        });
         clearTimeout(timeoutId);
 
-        toast.success("Bot created successfully! 🎉");
+        // Show success message with website scraping status if applicable
+        const successMessage = response.data.message || "Bot created successfully! 🎉";
+        toast.success(successMessage);
+
         reset();
-        navigate("/dashboard", { state: { botCreated: true } });
+        navigate("/dashboard", {
+          state: {
+            botCreated: true,
+            botId: response.data.bot._id,
+          },
+        });
       } catch (error) {
         console.error("Bot creation error:", error);
 
@@ -105,7 +117,9 @@ export const CreateBotForm = () => {
                 <Bot size={22} />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Create New Bot</h1>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Create New Bot
+                </h1>
                 <p className="text-sm text-gray-400">
                   Configure your multilingual AI assistant
                 </p>
@@ -154,16 +168,14 @@ export const CreateBotForm = () => {
                   />
 
                   <FormInput
-                    type="textarea"
-                    label="Description"
-                    name="description"
-                    value={formData.description}
+                    type="text"
+                    label="Your Website URL"
+                    name="website"
+                    value={formData.website}
                     onChange={handleChange}
-                    placeholder="Helps customers with product queries..."
-                    error={errors.description}
-                    maxLength={VALIDATION_RULES.description.maxLength}
-                    showCharCount
-                    rows={3}
+                    placeholder="https://example.com"
+                    error={errors.website}
+                    helperText="Optional: We'll scrape your website to train the bot"
                   />
 
                   <FormInput
@@ -175,6 +187,19 @@ export const CreateBotForm = () => {
                     onChange={handleChange}
                     error={errors.language}
                     options={LANGUAGES}
+                  />
+
+                  <FormInput
+                    type="textarea"
+                    label="Description"
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    placeholder="Helps customers with product queries..."
+                    error={errors.description}
+                    maxLength={VALIDATION_RULES.description.maxLength}
+                    showCharCount
+                    rows={3}
                   />
 
                   <FormInput
