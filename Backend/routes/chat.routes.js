@@ -34,66 +34,111 @@ router.post("/:botId", authMiddleware, async (req, res) => {
 
         const lowerMsg = message.toLowerCase();
 
-        const isPricing = /price|plan|cost|subscription/.test(lowerMsg);
-        const isFAQ = /how|what|why|when|where/.test(lowerMsg);
-        const isDocs = /documentation|api|integration|setup/.test(lowerMsg);
+        const isPricing = /price|plan|cost|subscription|billing|rates/.test(lowerMsg);
+        const isFAQ = /how|what|why|when|where|who|which|can you|do you/.test(lowerMsg);
+        const isDocs = /documentation|api|integration|setup|install|guide|tutorial/.test(lowerMsg);
 
         // ============================
-        // 📦 CONTEXT BUILDER
+        // 📦 ENHANCED CONTEXT BUILDER
         // ============================
 
         let context = `
-                Website Name: ${bot.name}
-                Description: ${bot.description || "Not provided"}
-                `;
+            === WEBSITE INFORMATION ===
+            Website Name: ${bot.name}
+            Website URL: ${bot.websiteURL}
+            Description: ${bot.description || "Not provided"}
+            Language: ${bot.language}
 
-                        if (isFAQ && bot.faqs?.length) {
-                            context += `
-                FAQs:
-                ${bot.faqs
-                                    .map((f) => `Q: ${f.question}\nA: ${f.answer}`)
-                                    .join("\n\n")}
-                `;
-                        }
+            === INSTRUCTIONS ===
+            - Use the website URL (${bot.websiteURL}) as the primary source of truth
+            - Reference the website when providing answers
+            - If detailed information is needed, suggest visiting the website
+            - Include relevant website sections in your response
+            `;
 
-                        if (isPricing && bot.pricing?.length) {
-                            context += `
-                Pricing:
-                ${bot.pricing.map((p) => `${p.plan} - ${p.price}`).join("\n")}
-                `;
-                        }
+        // Add FAQ context if relevant
+        if (isFAQ && bot.faqs?.length > 0) {
+            context += `
+            === FREQUENTLY ASKED QUESTIONS ===
+            ${bot.faqs
+                    .map((f, idx) => `Q${idx + 1}: ${f.question}\nA: ${f.answer}`)
+                    .join("\n\n")}
+            `;
+        }
 
-                        if (isDocs && bot.docs) {
-                            context += `
-                Documentation:
+        // Add Pricing context if relevant
+        if (isPricing && bot.pricing?.length > 0) {
+            context += `
+                === PRICING INFORMATION ===
+                For detailed pricing, visit: ${bot.websiteURL}
+
+                Plans Available:
+                ${bot.pricing
+                    .map((p) => `• ${p.plan}: ${p.price}`)
+                    .join("\n")}
+`;
+        }
+
+        // Add Documentation context if relevant
+        if (isDocs && bot.docs) {
+            context += `
+                === DOCUMENTATION ===
                 ${bot.docs}
+
+                For complete documentation, visit: ${bot.websiteURL}
                 `;
         }
 
+        // Add content chunks if available
+        if (bot.contentChunks?.length > 0) {
+            context += `
+                === WEBSITE CONTENT ===
+                ${bot.contentChunks
+                    .slice(0, 3) // Limit to 3 most relevant chunks
+                    .map((chunk) => chunk.content || chunk)
+                    .join("\n\n")}
+`;
+        }
+
         // ============================
-        // 🎯 SYSTEM PROMPT (Clean)
+        // 🎯 ENHANCED SYSTEM PROMPT
         // ============================
 
         const systemPrompt = `
-            You are the official AI assistant for "${bot.name}".
+                You are the official AI customer support assistant for "${bot.name}" (${bot.websiteURL}).
 
-            STRICT RULES:
+                CRITICAL RULES:
 
-            1. You MUST respond ONLY in this language: ${bot.language}.
-            2. Use ONLY the provided website context.
-            3. Maximum 3 short sentences.
-            4. Be clear, helpful, and professional.
-            5. If the answer is NOT found in context, respond EXACTLY with:
-            "I will connect you with our support team."
-            6. Do NOT hallucinate.
-            7. Do NOT add extra information.
-            8. Do NOT translate the website name.
+                1. **LANGUAGE**: Respond ONLY in ${bot.language}. Never use any other language.
 
-            Respond naturally in ${bot.language}.
-`;
+                2. **CONTEXT USAGE**: 
+                - Use ONLY the provided knowledge base (FAQs, pricing, docs, content chunks)
+                - Reference the website URL when providing information
+                - When answering, mention relevant sections from the website
+                
+                3. **RESPONSE FORMAT**:
+                - Keep responses to 2-3 clear sentences maximum
+                - Be helpful, professional, and direct
+                - Use simple language
+                
+                4. **WEBSITE REFERENCE**:
+                - Always mention: "For more details, visit: ${bot.websiteURL}"
+                - For specific topics, suggest: "You can find this on our ${bot.name} website at ${bot.websiteURL}"
+                
+                5. **OUT OF SCOPE**:
+                - If the answer is NOT found in the provided context, respond EXACTLY with:
+                "I don't have information about that. Please visit our website at ${bot.websiteURL} or contact our support team."
+                - Do NOT make up information
+                - Do NOT provide information beyond the context
+                - Do NOT translate the company/website name
+                
+                6. **TONE**: Professional, helpful, and friendly.
+
+                Remember: Your role is to direct customers to the website (${bot.websiteURL}) when needed.
+                `;
 
         // ============================
-        // 🤖 GEMINI CALL
+        // 🤖 GENERATE RESPONSE
         // ============================
 
         const aiResponse = await generateResponse(
@@ -102,21 +147,28 @@ router.post("/:botId", authMiddleware, async (req, res) => {
             systemPrompt,
             {
                 temperature: 0.2,
-                maxOutputTokens: 150,
+                maxOutputTokens: 200,
             }
         );
 
         const responseTimeMs = Date.now() - startTime;
+
+        // ============================
+        // 💾 SAVE CONVERSATION
+        // ============================
 
         await Conversation.create({
             botId: bot._id,
             userMessage: message,
             aiMessage: aiResponse,
             responseTimeMs,
+            intent: isPricing ? "pricing" : isFAQ ? "faq" : isDocs ? "docs" : "general",
         });
 
         res.json({
             botId: bot._id,
+            botName: bot.name,
+            websiteURL: bot.websiteURL,
             aiResponse,
             responseTimeMs,
         });
