@@ -53,7 +53,7 @@ const NotFound = () => {
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 pt-4">
             <Link
-              to="/"
+              onClick={() => window.history.back()}
               className="flex items-center justify-center gap-2 px-8 py-3.5 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:shadow-lg text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105"
             >
               <Home size={18} />

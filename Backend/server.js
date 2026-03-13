@@ -57,5 +57,5 @@ app.use('/api/public/chat', publicRoutes);
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-  console.log(`🚀 LinguaBot backend running on http://localhost:${PORT}`);
+  console.log(`LinguaBot backend running on http://localhost:${PORT}`);
 });

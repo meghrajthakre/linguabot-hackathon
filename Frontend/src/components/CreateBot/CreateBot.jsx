@@ -71,7 +71,7 @@ export const CreateBotForm = () => {
         clearTimeout(timeoutId);
 
         // Show success message with website scraping status if applicable
-        const successMessage = response.data.message || "Bot created successfully! 🎉";
+        const successMessage = response.data.message || "Bot created successfully!";
         toast.success(successMessage);
 
         reset();
@@ -132,11 +132,10 @@ export const CreateBotForm = () => {
                   key={id}
                   type="button"
                   onClick={() => setActiveTab(id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    activeTab === id
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === id
                       ? "bg-white shadow-sm text-gray-900"
                       : "text-gray-500 hover:text-gray-700"
-                  }`}
+                    }`}
                   aria-selected={activeTab === id}
                   role="tab"
                 >
