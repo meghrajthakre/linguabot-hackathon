@@ -262,7 +262,7 @@ const BotCard = ({ bot, onDelete, isPro = false, onTrainViaUrl }) => {
                   </Link>
 
                   <Link
-                    to={`/bot/${bot._id}/preview`}
+                    to={`/bot/${bot._id}`}
                     className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                     role="menuitem"
@@ -345,10 +345,9 @@ const BotCard = ({ bot, onDelete, isPro = false, onTrainViaUrl }) => {
             <button
               onClick={() => setIsEmbedModalOpen(true)}
               className={`
-                flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold 
-                border-2 transition-all duration-300 transform active:scale-95
+                flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs text-black font-bold  transition-all duration-300 transform active:scale-95
                
-                   bg-yellow-400 text-white -translate-y-0.5 hover:bg-yellow-300
+                   bg-yellow-500  -translate-y-0.5 hover:bg-yellow-300
                  
               `}
             >

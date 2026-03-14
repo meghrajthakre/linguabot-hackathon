@@ -12,30 +12,67 @@ import {
     CheckCircle,
     ArrowRight,
     Copy,
-    ExternalLink,
     Bot,
     Settings,
     DollarSign,
     Link as LinkIcon,
     Rocket,
     Sparkles,
+    Phone,
+    Mail,
+    Clock,
+    Gift,
+    TrendingUp,
+    ExternalLink,
 } from "lucide-react";
 
 const HowToMakeBot = () => {
     const [expandedStep, setExpandedStep] = useState(0);
     const [copiedCode, setCopiedCode] = useState(false);
 
+    // Simplified 3-step overview
+    const quickSteps = [
+        {
+            icon: Bot,
+            title: "1. Configure",
+            description: "Fill in your bot's details, contact info, and business settings.",
+        },
+        {
+            icon: BookOpen,
+            title: "2. Train",
+            description: "Add FAQs, pricing, and documentation to train your AI.",
+        },
+        {
+            icon: Rocket,
+            title: "3. Launch",
+            description: "Get your embed code, integrate, and go live.",
+        },
+    ];
+
+    // Detailed 7 steps (expanded from actual bot data)
     const steps = [
         {
             id: 1,
             title: "Create Your Bot",
             description: "Initialize a new bot from your dashboard",
-            details:
-                "Go to your dashboard and click on Create Bot. Give your bot a meaningful name and short description that clearly explains its purpose.",
+            details: `Fill in all the essential information about your bot. This includes:
+• Bot name (required)
+• Description (optional)
+• Language (choose from 10+ languages)
+• Business type (General, E‑commerce, SaaS, Service, Restaurant)
+• Industry (e.g., Technology, Healthcare)
+• Website URL (optional)
+• Support email & phone
+• Support hours & business hours
+• Holidays / closures
+• Return & refund periods (in days)
+• Free trial settings (enable/disable, trial days)
+• AI response settings (temperature, max tokens, tone)`,
             tips: [
-                "Use a professional and clear bot name",
-                "Define the exact problem your bot solves",
-                "Keep description short but impactful",
+                "Use a professional bot name that reflects your brand.",
+                "Provide accurate contact details – users appreciate it.",
+                "Set realistic return/refund days based on your policy.",
+                "Adjust AI temperature: lower = more factual, higher = more creative.",
             ],
             icon: Bot,
         },
@@ -85,11 +122,11 @@ const HowToMakeBot = () => {
             title: "Train & Generate App Link",
             description: "Train your bot and get a public access link",
             details:
-                "Once FAQs and configuration are complete, start training your bot. After training finishes, a public app link will be generated.",
+                "Once FAQs and configuration are complete, start training your bot. After training finishes, a public app link will be generated. You can also copy the embed code directly from your bot card using the code button.",
             tips: [
                 "Wait for training completion confirmation",
-                "Copy the generated app link from dashboard",
-                "Use iframe for quick integration",
+                "Copy the generated app link from the bot card",
+                "Use the embed code button (</>) on any bot card",
                 "Test integration on staging first",
                 "Monitor performance after deployment",
             ],
@@ -126,36 +163,12 @@ const HowToMakeBot = () => {
     ];
 
     const features = [
-        {
-            icon: Zap,
-            title: "Lightning Fast",
-            description: "Deploy your bot in minutes, not days",
-        },
-        {
-            icon: Globe,
-            title: "Multi-Language",
-            description: "Support 11+ languages globally",
-        },
-        {
-            icon: BarChart3,
-            title: "Advanced Analytics",
-            description: "Track every interaction and metric",
-        },
-        {
-            icon: Shield,
-            title: "Enterprise Security",
-            description: "Bank-grade encryption & compliance",
-        },
-        {
-            icon: Code,
-            title: "Easy Integration",
-            description: "Embed with iframe or API calls",
-        },
-        {
-            icon: BookOpen,
-            title: "Full Documentation",
-            description: "Comprehensive guides and tutorials",
-        },
+        { icon: Zap, title: "Lightning Fast", description: "Deploy your bot in minutes, not days" },
+        { icon: Globe, title: "Multi-Language", description: "Support 11+ languages globally" },
+        { icon: BarChart3, title: "Advanced Analytics", description: "Track every interaction and metric" },
+        { icon: Shield, title: "Enterprise Security", description: "Bank-grade encryption & compliance" },
+        { icon: Code, title: "Easy Integration", description: "Embed with iframe or API calls" },
+        { icon: BookOpen, title: "Full Documentation", description: "Comprehensive guides and tutorials" },
     ];
 
     const integrationMethods = [
@@ -237,21 +250,19 @@ const HowToMakeBot = () => {
     };
 
     return (
-        <div className="min-h-screen ">
-
-
+        <div className="min-h-screen  bg-gradient-to-r from-[#f3efe6]/80 to-[#e8e1d2]/80">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
-                {/* Hero Section */}
+                {/* Hero Section with 3-step tagline */}
                 <div className="text-center mb-20 space-y-6">
                     <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-100 rounded-full border border-yellow-200">
                         <Sparkles size={16} className="text-yellow-600" />
                         <span className="text-sm font-semibold text-yellow-700">
-                            Step-by-Step Guide
+                            Get Your Bot in 3 Simple Steps
                         </span>
                     </div>
 
                     <h1 className="text-4xl sm:text-5xl font-black text-gray-900 leading-tight">
-                        Create & Deploy Your AI Bot in 7 Steps
+                        Create & Deploy Your AI Bot
                     </h1>
                     <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
                         Follow our proven process to build, train, monetize and integrate your AI
@@ -272,11 +283,34 @@ const HowToMakeBot = () => {
                                     .getElementById("integration-section")
                                     .scrollIntoView({ behavior: "smooth" })
                             }
-                            className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-lg border border-[#e8e0d0] transition-all"
+                            className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-white hover:bg-gray-50 text-gray-700 font-semibold rounded-lg border border-gray-200 transition-all"
                         >
                             See Integration Options
                             <ChevronDown size={18} />
                         </button>
+                    </div>
+                </div>
+
+                {/* Quick 3-step overview */}
+                <div className="mb-20">
+                    <div className="grid md:grid-cols-3 gap-6">
+                        {quickSteps.map((step, idx) => {
+                            const Icon = step.icon;
+                            return (
+                                <div
+                                    key={idx}
+                                    className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm text-center hover:shadow-md transition"
+                                >
+                                    <div className="w-16 h-16 mx-auto rounded-full bg-yellow-100 flex items-center justify-center mb-4">
+                                        <Icon size={28} className="text-yellow-600" />
+                                    </div>
+                                    <h3 className="font-bold text-gray-900 text-lg mb-2">
+                                        {step.title}
+                                    </h3>
+                                    <p className="text-sm text-gray-600">{step.description}</p>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
 
@@ -291,7 +325,7 @@ const HowToMakeBot = () => {
                             return (
                                 <div
                                     key={index}
-                                    className="bg-white rounded-xl p-6 border border-[#e8e0d0] hover:shadow-md transition-all"
+                                    className="bg-white rounded-xl p-6 border border-gray-200 hover:shadow-md transition-all"
                                 >
                                     <div className="w-12 h-12 rounded-lg bg-yellow-100 flex items-center justify-center mb-4">
                                         <Icon size={24} className="text-yellow-600" />
@@ -306,97 +340,89 @@ const HowToMakeBot = () => {
                     </div>
                 </div>
 
-                {/* Steps Section */}
-                {/* Steps Section */}
-<div className="mb-20">
-  <h2 className="text-3xl font-bold text-gray-900 mb-10 text-center">
-    7-Step Creation Process
-  </h2>
+                {/* Detailed Steps Section */}
+                <div className="mb-20">
+                    <h2 className="text-3xl font-bold text-gray-900 mb-10 text-center">
+                        7‑Step Detailed Guide
+                    </h2>
 
-  <div className="space-y-4">
-    {steps.map((step, index) => {
-      const StepIcon = step.icon;
-      const isOpen = expandedStep === index;
+                    <div className="space-y-4">
+                        {steps.map((step, index) => {
+                            const StepIcon = step.icon;
+                            const isOpen = expandedStep === index;
 
-      return (
-        <div
-          key={step.id}
-          className="bg-white rounded-xl border border-[#e8e0d0] shadow-sm hover:shadow-md transition-all"
-        >
-          <button
-            onClick={() =>
-              setExpandedStep(isOpen ? -1 : index)
-            }
-            className="w-full px-6 py-5 flex items-center justify-between hover:bg-gray-50 transition-colors"
-          >
-            <div className="flex items-center gap-4 flex-1 text-left">
-              
-              {/* Icon */}
-              <div className="w-12 h-12 rounded-xl bg-yellow-100 flex items-center justify-center">
-                <StepIcon size={22} className="text-yellow-600" />
-              </div>
+                            return (
+                                <div
+                                    key={step.id}
+                                    className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all"
+                                >
+                                    <button
+                                        onClick={() =>
+                                            setExpandedStep(isOpen ? -1 : index)
+                                        }
+                                        className="w-full px-6 py-5 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                                    >
+                                        <div className="flex items-center gap-4 flex-1 text-left">
+                                            <div className="w-12 h-12 rounded-xl bg-yellow-100 flex items-center justify-center">
+                                                <StepIcon size={22} className="text-yellow-600" />
+                                            </div>
 
-              {/* Text */}
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-1">
-                  <span className="w-8 h-8 flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 text-white font-bold text-sm">
-                    {step.id}
-                  </span>
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {step.title}
-                  </h3>
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-3 mb-1">
+                                                    <span className="w-8 h-8 flex items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-yellow-500 text-white font-bold text-sm">
+                                                        {step.id}
+                                                    </span>
+                                                    <h3 className="text-lg font-semibold text-gray-900">
+                                                        {step.title}
+                                                    </h3>
+                                                </div>
+                                                <p className="text-sm text-gray-500">
+                                                    {step.description}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <ChevronDown
+                                            size={20}
+                                            className={`text-gray-400 transition-transform ${
+                                                isOpen ? "rotate-180" : ""
+                                            }`}
+                                        />
+                                    </button>
+
+                                    {isOpen && (
+                                        <div className="px-6 py-5 border-t border-gray-200 bg-gray-50 space-y-4">
+                                            <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                                                {step.details}
+                                            </p>
+
+                                            <div>
+                                                <p className="font-semibold text-sm mb-3 text-gray-900 flex items-center gap-2">
+                                                    <Zap size={16} className="text-yellow-500" />
+                                                    Best Practices:
+                                                </p>
+                                                <ul className="space-y-2">
+                                                    {step.tips.map((tip, i) => (
+                                                        <li
+                                                            key={i}
+                                                            className="flex items-start gap-2 text-sm text-gray-600"
+                                                        >
+                                                            <CheckCircle
+                                                                size={16}
+                                                                className="text-green-500 flex-shrink-0 mt-0.5"
+                                                            />
+                                                            <span>{tip}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
-
-                <p className="text-sm text-gray-500">
-                  {step.description}
-                </p>
-              </div>
-            </div>
-
-            {/* Arrow */}
-            <ChevronDown
-              size={20}
-              className={`text-gray-400 transition-transform ${
-                isOpen ? "rotate-180" : ""
-              }`}
-            />
-          </button>
-
-          {/* Expand Section */}
-          {isOpen && (
-            <div className="px-6 py-5 border-t border-[#e8e0d0] bg-gray-50 space-y-4">
-              <p className="text-gray-700 leading-relaxed">
-                {step.details}
-              </p>
-
-              <div>
-                <p className="font-semibold text-sm mb-3 text-gray-900 flex items-center gap-2">
-                  <Zap size={16} className="text-yellow-500" />
-                  Best Practices:
-                </p>
-
-                <ul className="space-y-2">
-                  {step.tips.map((tip, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start gap-2 text-sm text-gray-600"
-                    >
-                      <CheckCircle
-                        size={16}
-                        className="text-green-500 flex-shrink-0 mt-0.5"
-                      />
-                      <span>{tip}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          )}
-        </div>
-      );
-    })}
-  </div>
-</div>
 
                 {/* Integration Section */}
                 <div id="integration-section" className="mb-20">
@@ -404,17 +430,17 @@ const HowToMakeBot = () => {
                         Website Integration Options
                     </h2>
                     <p className="text-gray-600 text-center mb-10 max-w-2xl mx-auto">
-                        After training completes, you'll receive a public app link. Choose
-                        the integration method that best fits your needs.
+                        After training completes, you'll receive a public app link. You can also
+                        copy the embed code directly from any bot card using the <Code size={16} className="inline" /> button.
                     </p>
 
                     <div className="space-y-6">
                         {integrationMethods.map((method, index) => (
                             <div
                                 key={index}
-                                className="bg-white rounded-2xl border border-[#e8e0d0] overflow-hidden hover:shadow-md transition-all"
+                                className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-md transition-all"
                             >
-                                <div className="px-6 py-5 bg-gradient-to-r from-yellow-50 to-orange-50 border-b border-[#e8e0d0]">
+                                <div className="px-6 py-5 bg-gradient-to-r from-yellow-50 to-orange-50 border-b border-gray-200">
                                     <h3 className="text-xl font-bold text-gray-900 mb-2">
                                         {method.title}
                                     </h3>
@@ -493,7 +519,7 @@ const HowToMakeBot = () => {
                 </div>
 
                 {/* Final CTA */}
-                <div className="bg-white rounded-2xl border border-[#e8e0d0] p-8 sm:p-12 text-center space-y-6">
+                <div className="bg-white rounded-2xl border border-gray-200 p-8 sm:p-12 text-center space-y-6">
                     <h2 className="text-3xl font-bold text-gray-900">
                         Ready to Launch Your Bot?
                     </h2>
@@ -526,7 +552,7 @@ const FAQCard = ({ question, answer }) => {
     const [expanded, setExpanded] = useState(false);
 
     return (
-        <div className="bg-white rounded-xl border border-[#e8e0d0] overflow-hidden">
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <button
                 onClick={() => setExpanded(!expanded)}
                 className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors text-left"
@@ -534,13 +560,14 @@ const FAQCard = ({ question, answer }) => {
                 <h3 className="font-semibold text-gray-900 pr-4">{question}</h3>
                 <ChevronRight
                     size={20}
-                    className={`text-gray-400 transition-transform flex-shrink-0 ${expanded ? "rotate-90" : ""
-                        }`}
+                    className={`text-gray-400 transition-transform flex-shrink-0 ${
+                        expanded ? "rotate-90" : ""
+                    }`}
                 />
             </button>
 
             {expanded && (
-                <div className="px-6 py-4 bg-gray-50 border-t border-[#e8e0d0] text-gray-600 text-sm leading-relaxed">
+                <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 text-gray-600 text-sm leading-relaxed">
                     {answer}
                 </div>
             )}

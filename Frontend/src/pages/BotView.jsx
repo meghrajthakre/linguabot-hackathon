@@ -24,7 +24,7 @@ const BotView = () => {
             setMessages([
                 {
                     from: "bot",
-                    text: `Hi! I'm ${res.data.name} 👋 How can I help you?`,
+                    text: `Hi! I'm ${res.data.bot.name} 👋 How can I help you?`,
                 },
             ]);
         };

@@ -10,9 +10,11 @@ import {
   BarChart3,
   Sparkles,
   ChevronDown,
+  Crown,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api/axios";
+import toast from "react-hot-toast"; // <-- added
 
 const Navbar = () => {
   const location = useLocation();
@@ -24,7 +26,6 @@ const Navbar = () => {
 
   const navLinks = [
     { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { path: "/bot", label: "Bot Editor", icon: Bot },
     { path: "/analytics", label: "Analytics", icon: BarChart3 },
   ];
 
@@ -33,23 +34,50 @@ const Navbar = () => {
   const NavLink = ({ path, label, icon: Icon, mobile = false }) => {
     const active = isActive(path);
 
+    const handleClick = (e) => {
+      if (path === "/analytics") {
+        e.preventDefault(); // stop navigation
+        toast.custom(
+          (t) => (
+            <div
+              className={`flex items-center gap-3 px-4 py-3 bg-gray-900 text-white rounded-xl border border-gray-700 shadow-xl transition-all ${
+                t.visible ? "animate-enter" : "animate-leave"
+              }`}
+            >
+              <div className="bg-yellow-500/20 p-2 rounded-lg">
+                <Crown className="text-yellow-400" size={18} />
+              </div>
+              <div>
+                <p className="font-semibold text-sm">Pro Feature</p>
+                <p className="text-xs text-gray-400">
+                  Analytics is coming soon...
+                </p>
+              </div>
+            </div>
+          ),
+          { duration: 4000 }
+        );
+      }
+      setMobileMenuOpen(false); // close mobile menu in any case
+    };
+
     return (
       <Link
         to={path}
-        onClick={() => setMobileMenuOpen(false)}
+        onClick={handleClick}
         className={`
           relative flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium
           transition-all duration-200
           ${mobile ? "w-full" : ""}
-          ${active
-            ? "bg-yellow-400 text-white-500"
-            : "text-gray-600 hover:text-yellow-600 hover:bg-yellow-50"
+          ${
+            active
+              ? "bg-yellow-400 text-white-500"
+              : "text-gray-600 hover:text-yellow-600 hover:bg-yellow-50"
           }
         `}
       >
         <Icon size={18} />
         {label}
-
         {active && (
           <span className="absolute left-3 right-3 -bottom-1 h-[2px] bg-yellow-500 rounded-full" />
         )}
@@ -73,17 +101,13 @@ const Navbar = () => {
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-gradient-to-r from-[#f3efe6]/80 to-[#e8e1d2]/80 shadow-sm">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
-
             {/* Logo */}
             <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-3">
               <div className="bg-yellow-400 p-2 rounded-xl shadow-sm">
                 <Bot className="text-white w-5 h-5" />
               </div>
-
               <div className="flex flex-col">
-                <span className="font-bold text-lg text-gray-900">
-                  LinguaBot
-                </span>
+                <span className="font-bold text-lg text-gray-900">LinguaBot</span>
                 <span className="text-[10px] text-gray-500 tracking-wide flex items-center gap-1">
                   <Sparkles size={10} className="text-yellow-500" />
                   AI SUPPORT
@@ -102,7 +126,6 @@ const Navbar = () => {
 
             {/* Right Side */}
             <div className="flex items-center gap-3">
-
               {/* If Logged In */}
               {user ? (
                 <div className="relative hidden md:block">
@@ -127,7 +150,6 @@ const Navbar = () => {
                         </p>
                         <p className="text-xs text-gray-500">{user.email}</p>
                       </div>
-
                       <button
                         onClick={handleLogout}
                         className="w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
@@ -146,7 +168,6 @@ const Navbar = () => {
                   >
                     Sign In
                   </Link>
-
                   <Link
                     to="/signup"
                     className="hidden md:block px-5 py-2 bg-yellow-400 hover:bg-yellow-500 text-white rounded-xl text-sm font-semibold transition"
@@ -169,13 +190,11 @@ const Navbar = () => {
           {/* Mobile Menu */}
           {mobileMenuOpen && (
             <div className="md:hidden mt-4 space-y-3">
-
               {user && (
                 <>
                   {navLinks.map((link) => (
                     <NavLink key={link.path} {...link} mobile />
                   ))}
-
                   <button
                     onClick={handleLogout}
                     className="w-full mt-2 px-4 py-3 bg-red-50 text-red-600 rounded-xl flex items-center justify-center gap-2"
@@ -185,7 +204,6 @@ const Navbar = () => {
                   </button>
                 </>
               )}
-
               {!user && (
                 <>
                   <Link
@@ -194,7 +212,6 @@ const Navbar = () => {
                   >
                     Sign In
                   </Link>
-
                   <Link
                     to="/signup"
                     className="block w-full px-4 py-3 bg-yellow-400 text-white rounded-xl text-center"
@@ -212,4 +229,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-

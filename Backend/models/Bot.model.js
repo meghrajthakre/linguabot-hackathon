@@ -50,7 +50,6 @@ const botSchema = new mongoose.Schema(
       type: String,
       required: true,
       default: "en",
-      enum: ["en", "es", "fr", "de", "it", "pt", "ja", "zh", "ar", "hi"],
     },
 
     // Business Type & Information
