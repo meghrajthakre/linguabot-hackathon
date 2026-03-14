@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Check, MessageCircle, Zap, Shield } from "lucide-react";
+import { ArrowRight, Check, MessageCircle, Zap, Shield, Bot } from "lucide-react";
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -38,7 +38,7 @@ const LandingPage = () => {
             onClick={() => navigate("/")}
           >
             <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center text-white font-bold text-lg group-hover:scale-110 transition-transform duration-300">
-              🤖
+                <Bot className="text-white w-5 h-5" />
             </div>
             <span className="text-2xl font-bold tracking-tight group-hover:text-yellow-400 transition-all duration-300">LinguaBot</span>
           </div>
