@@ -74,30 +74,29 @@ const BotCard = ({ bot, onDelete, isPro = false, onTrainViaUrl }) => {
     setEmbedCopied(true);
 
     toast.custom((t) => (
-  <div className={`flex items-center gap-3 px-5 py-4 
+      <div className={`flex items-center gap-3 px-5 py-4 
   bg-gray-900 text-white rounded-2xl 
   border border-green-500/30 shadow-2xl
-  transition-all duration-300 ${
-    t.visible ? "animate-in slide-in-from-top-2" : "animate-out"
-  }`}>
+  transition-all duration-300 ${t.visible ? "animate-in slide-in-from-top-2" : "animate-out"
+        }`}>
 
-    <div className="bg-green-500/20 p-2 rounded-xl">
-      <CopyCheck size={18} className="text-green-400"/>
-    </div>
+        <div className="bg-green-500/20 p-2 rounded-xl">
+          <CopyCheck size={18} className="text-green-400" />
+        </div>
 
-    <div className="flex flex-col">
-      <span className="text-sm font-bold">
-        Embed Code Copied
-      </span>
+        <div className="flex flex-col">
+          <span className="text-sm font-bold">
+            Embed Code Copied
+          </span>
 
-      <span className="text-xs text-gray-400">
-        Script copied to clipboard successfully
-      </span>
-    </div>
+          <span className="text-xs text-gray-400">
+            Script copied to clipboard successfully
+          </span>
+        </div>
 
-    <CheckCircle size={18} className="text-green-500 ml-2"/>
+        <CheckCircle size={18} className="text-green-500 ml-2" />
 
-  </div>));
+      </div>));
 
     setTimeout(() => setEmbedCopied(false), 2000);
   };
@@ -320,7 +319,7 @@ const BotCard = ({ bot, onDelete, isPro = false, onTrainViaUrl }) => {
           <div className="flex gap-3 mt-6">
             <button
               onClick={handleTrainClick}
-              className={`flex-[2] flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold transition-all duration-300 ${isPro
+              className={`flex-[1] flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold transition-all duration-300 ${isPro
                 ? "bg-gradient-to-r from-yellow-500 to-yellow-600 text-white hover:from-yellow-600 hover:to-yellow-700 shadow-lg shadow-yellow-100 transform hover:-translate-y-0.5"
                 : "bg-gray-100 text-gray-400 border border-gray-200"
                 }`}
@@ -342,11 +341,19 @@ const BotCard = ({ bot, onDelete, isPro = false, onTrainViaUrl }) => {
               )}
             </button>
 
+            {/* Embed Code Button */}
             <button
               onClick={() => setIsEmbedModalOpen(true)}
-              className="flex-1 flex items-center justify-center border-2 border-gray-200 rounded-xl hover:border-yellow-500 hover:bg-yellow-50 transition-all duration-300 text-gray-600 hover:text-yellow-600"
+              className={`
+                flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold 
+                border-2 transition-all duration-300 transform active:scale-95
+               
+                   bg-yellow-400 text-white -translate-y-0.5 hover:bg-yellow-300
+                 
+              `}
             >
-              <Code size={20} />
+              <Code size={15} className="flex-shrink-0" />
+              <span>GET EMBED</span>
             </button>
           </div>
         </div>
@@ -354,7 +361,7 @@ const BotCard = ({ bot, onDelete, isPro = false, onTrainViaUrl }) => {
         {/* Footer CTA */}
         <Link
           to={`/bot/${bot._id}`}
-          className="group/manage py-4 bg-gray-900 text-white text-xs font-black uppercase tracking-widest text-center hover:bg-yellow-500 transition-all flex justify-center items-center gap-3"
+          className="group/manage py-4 bg-gray-900 text-white text-xs font-black uppercase  text-center hover:bg-yellow-500 transition-all flex justify-center items-center gap-3"
         >
           <span>Open Chat Bot</span>
           <ArrowRight size={16} className="group-hover/manage:translate-x-2 transition-transform" />

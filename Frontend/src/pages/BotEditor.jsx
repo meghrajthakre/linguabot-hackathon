@@ -2,15 +2,28 @@ import React, { useEffect, useState } from "react";
 import ConfirmationModal from "../components/ConfirmationModal";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import { 
-  Save, Plus, Trash2, AlertCircle, CheckCircle, ArrowLeft, 
-  Globe, FileText, DollarSign, HelpCircle, Bot, Sparkles,
-  X, Edit3, Eye, Copy, Check
+import {
+  Save, Plus, Trash2, AlertCircle, ArrowLeft,
+  Globe, FileText, DollarSign, HelpCircle, Bot,
+  X, Eye, Copy, Check, Phone, Mail, Clock, Calendar,
+  Settings, Gift, TrendingUp
 } from "lucide-react";
 import api from "../api/axios";
 
 const inputCls = "w-full border border-gray-200 bg-white rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none transition-all placeholder:text-gray-400 shadow-sm hover:border-gray-300";
 const labelCls = "block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5";
+
+// Language mapping (code -> display name)
+const languageMap = {
+  en: "English",
+  hi: "Hindi",
+  es: "Spanish",
+  fr: "French",
+  de: "German",
+  ja: "Japanese",
+  zh: "Chinese",
+  // add more as needed
+};
 
 const BotEditor = () => {
   const { id } = useParams();
@@ -25,13 +38,30 @@ const BotEditor = () => {
   const [previewMode, setPreviewMode] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // Form data
+  // Form data - expanded to match API response
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     language: "English",
     businessType: "general",
     industry: "",
+    websiteURL: "",
+    supportEmail: "",
+    supportPhone: "",
+    supportHours: "",
+    businessHours: "",
+    holidays: "",
+    returnDays: 30,
+    refundDays: 5,
+    freeTrial: {
+      enabled: false,
+      days: 14
+    },
+    responseConfig: {
+      temperature: 0.3,
+      maxOutputTokens: 250,
+      tone: "professional"
+    },
     faqs: [],
     pricing: [],
     docs: "",
@@ -52,20 +82,41 @@ const BotEditor = () => {
       try {
         setLoading(true);
         const { data } = await api.get(`/bots/${id}`);
-        
+        const bot = data.bot || data; // handle both { success, bot } and direct response
+
+        // Map language code to display name if possible
+        const languageDisplay = languageMap[bot.language] || bot.language || "English";
+
         const botData = {
-          name: data.name || "",
-          description: data.description || "",
-          language: data.language || "English",
-          businessType: data.businessType || "general",
-          industry: data.industry || "",
-          faqs: data.faqs || [],
-          pricing: data.pricing || [],
-          docs: data.docs || "",
-          allowedDomains: data.allowedDomains || [],
-          isActive: data.isActive !== undefined ? data.isActive : true
+          name: bot.name || "",
+          description: bot.description || "",
+          language: languageDisplay,
+          businessType: bot.businessType || "general",
+          industry: bot.industry || "",
+          websiteURL: bot.websiteURL || "",
+          supportEmail: bot.supportEmail || "",
+          supportPhone: bot.supportPhone || "",
+          supportHours: bot.supportHours || "",
+          businessHours: bot.businessHours || "",
+          holidays: bot.holidays || "",
+          returnDays: bot.returnDays ?? 30,
+          refundDays: bot.refundDays ?? 5,
+          freeTrial: {
+            enabled: bot.freeTrial?.enabled ?? false,
+            days: bot.freeTrial?.days ?? 14
+          },
+          responseConfig: {
+            temperature: bot.responseConfig?.temperature ?? 0.3,
+            maxOutputTokens: bot.responseConfig?.maxOutputTokens ?? 250,
+            tone: bot.responseConfig?.tone ?? "professional"
+          },
+          faqs: bot.faqs || [],
+          pricing: bot.pricing || [],
+          docs: bot.docs || "",
+          allowedDomains: bot.allowedDomains || [],
+          isActive: bot.isActive !== undefined ? bot.isActive : true
         };
-        
+
         setFormData(botData);
         setInitialData(botData);
       } catch (err) {
@@ -111,6 +162,35 @@ const BotEditor = () => {
       newErrors.description = "Description must be under 500 characters";
     }
 
+    // Validate email if provided
+    if (formData.supportEmail && !/^\S+@\S+\.\S+$/.test(formData.supportEmail)) {
+      newErrors.supportEmail = "Invalid email format";
+    }
+
+    // Validate phone if provided (simple)
+    if (formData.supportPhone && !/^[\d\s\+\-\(\)]{7,}$/.test(formData.supportPhone)) {
+      newErrors.supportPhone = "Invalid phone number";
+    }
+
+    // Validate website URL if provided
+    if (formData.websiteURL && !/^https?:\/\/.+\..+/.test(formData.websiteURL)) {
+      newErrors.websiteURL = "Invalid URL (must start with http:// or https://)";
+    }
+
+    // Validate return/refund days
+    if (formData.returnDays < 0) newErrors.returnDays = "Cannot be negative";
+    if (formData.refundDays < 0) newErrors.refundDays = "Cannot be negative";
+
+    // Validate temperature (0-1)
+    if (formData.responseConfig.temperature < 0 || formData.responseConfig.temperature > 1) {
+      newErrors.temperature = "Must be between 0 and 1";
+    }
+
+    // Validate max tokens (positive)
+    if (formData.responseConfig.maxOutputTokens < 1) {
+      newErrors.maxOutputTokens = "Must be at least 1";
+    }
+
     // Validate FAQs
     formData.faqs.forEach((faq, i) => {
       if (faq.question.trim() && !faq.answer.trim()) {
@@ -150,6 +230,16 @@ const BotEditor = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const updateNestedField = (parent, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [parent]: {
+        ...prev[parent],
+        [field]: value
+      }
+    }));
+  };
+
   /* ================= FAQ HANDLERS ================= */
   const addFaq = () => {
     setFormData(prev => ({
@@ -162,8 +252,6 @@ const BotEditor = () => {
     const updated = [...formData.faqs];
     updated[index][field] = value;
     setFormData({ ...formData, faqs: updated });
-    
-    // Clear error for this field
     setErrors(prev => ({
       ...prev,
       [`faq_${index}_${field}`]: undefined
@@ -189,7 +277,6 @@ const BotEditor = () => {
     const updated = [...formData.pricing];
     updated[index][field] = value;
     setFormData({ ...formData, pricing: updated });
-    
     setErrors(prev => ({
       ...prev,
       [`pricing_${index}_${field}`]: undefined
@@ -236,26 +323,33 @@ const BotEditor = () => {
 
     try {
       setSaving(true);
-      
-      // Prepare data for API
+
+      // Prepare data for API - need to convert language display name back to code?
+      // Assuming backend accepts display names, but if it expects codes we'd need reverse mapping.
+      // For now, we keep as is.
       const apiData = {
         ...formData,
-        // Ensure empty strings for optional fields
+        // Ensure empty strings for optional fields are sent as undefined if needed
         industry: formData.industry || undefined,
-        docs: formData.docs || undefined
+        docs: formData.docs || undefined,
+        websiteURL: formData.websiteURL || undefined,
+        supportEmail: formData.supportEmail || undefined,
+        supportPhone: formData.supportPhone || undefined,
+        supportHours: formData.supportHours || undefined,
+        businessHours: formData.businessHours || undefined,
+        holidays: formData.holidays || undefined,
       };
 
       await api.put(`/bots/${id}`, apiData);
-      
+
       setInitialData(formData);
-      
+
       toast.success("Bot updated successfully", {
         icon: '✅',
         duration: 3000,
         style: toastStyle
       });
 
-      // Navigate after short delay
       setTimeout(() => navigate('/dashboard'), 1500);
     } catch (err) {
       toast.error(err.response?.data?.message || "Update failed", {
@@ -287,8 +381,8 @@ const BotEditor = () => {
     });
   };
 
-  /* ================= COPY PUBLIC KEY ================= */
-  const copyPublicKey = async () => {
+  /* ================= COPY BOT ID ================= */
+  const copyBotId = async () => {
     try {
       await navigator.clipboard.writeText(id);
       setCopied(true);
@@ -307,7 +401,7 @@ const BotEditor = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-4">
           <div className="relative">
             <div className="w-16 h-16 border-4 border-yellow-200 border-t-yellow-500 rounded-full animate-spin" />
@@ -320,9 +414,9 @@ const BotEditor = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-r from-[#f3efe6]/80 to-[#e8e1d2]/80 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
-        
+
         {/* Header with Navigation */}
         <div className="mb-6 flex items-center justify-between">
           <button
@@ -347,7 +441,7 @@ const BotEditor = () => {
             <div className="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-xl">
               <span className="text-xs font-mono font-bold text-gray-600">ID: {id?.slice(0, 8)}</span>
               <button
-                onClick={copyPublicKey}
+                onClick={copyBotId}
                 className="p-1 hover:bg-white rounded-lg transition"
               >
                 {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} className="text-gray-500" />}
@@ -362,7 +456,7 @@ const BotEditor = () => {
           <div className="bg-white rounded-2xl border-2 border-gray-100 p-8 shadow-sm">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-yellow-500 to-amber-600 flex items-center justify-center shadow-lg">
+                <div className="w-16 h-16 rounded-2xl bg-yellow-500 flex items-center justify-center shadow-lg">
                   <Bot className="text-white" size={32} />
                 </div>
                 <div>
@@ -383,14 +477,12 @@ const BotEditor = () => {
               {/* Status Toggle */}
               <button
                 onClick={() => updateFormField('isActive', !formData.isActive)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  formData.isActive ? 'bg-green-500' : 'bg-gray-300'
-                }`}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formData.isActive ? 'bg-green-500' : 'bg-gray-300'
+                  }`}
               >
                 <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    formData.isActive ? 'translate-x-6' : 'translate-x-1'
-                  }`}
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.isActive ? 'translate-x-6' : 'translate-x-1'
+                    }`}
                 />
               </button>
             </div>
@@ -503,6 +595,7 @@ const BotEditor = () => {
                       <option value="ecommerce">E-commerce</option>
                       <option value="saas">SaaS</option>
                       <option value="service">Service</option>
+                      <option value="restaurant">Restaurant</option>
                     </select>
                   </div>
 
@@ -534,6 +627,272 @@ const BotEditor = () => {
                       <span className="text-xs text-gray-400">{formData.description.length}/500</span>
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* Contact Information */}
+              <div className="bg-white rounded-2xl border-2 border-gray-100 p-8 shadow-sm space-y-6">
+                <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
+                  <div className="p-2 bg-blue-100 rounded-xl">
+                    <Mail size={20} className="text-blue-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Contact Information</h2>
+                    <p className="text-sm text-gray-500">How customers can reach you</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Website URL */}
+                  <div className="space-y-2">
+                    <label className={labelCls}>Website URL</label>
+                    <input
+                      type="url"
+                      value={formData.websiteURL}
+                      onChange={(e) => updateFormField("websiteURL", e.target.value)}
+                      placeholder="https://example.com"
+                      className={`${inputCls} ${errors.websiteURL ? 'border-red-500' : ''}`}
+                    />
+                    {errors.websiteURL && (
+                      <span className="text-xs text-red-500 flex items-center gap-1">
+                        <AlertCircle size={12} />
+                        {errors.websiteURL}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Support Email */}
+                  <div className="space-y-2">
+                    <label className={labelCls}>Support Email</label>
+                    <input
+                      type="email"
+                      value={formData.supportEmail}
+                      onChange={(e) => updateFormField("supportEmail", e.target.value)}
+                      placeholder="support@example.com"
+                      className={`${inputCls} ${errors.supportEmail ? 'border-red-500' : ''}`}
+                    />
+                    {errors.supportEmail && (
+                      <span className="text-xs text-red-500 flex items-center gap-1">
+                        <AlertCircle size={12} />
+                        {errors.supportEmail}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Support Phone */}
+                  <div className="space-y-2">
+                    <label className={labelCls}>Support Phone</label>
+                    <input
+                      type="tel"
+                      value={formData.supportPhone}
+                      onChange={(e) => updateFormField("supportPhone", e.target.value)}
+                      placeholder="+1 234 567 8900"
+                      className={`${inputCls} ${errors.supportPhone ? 'border-red-500' : ''}`}
+                    />
+                    {errors.supportPhone && (
+                      <span className="text-xs text-red-500 flex items-center gap-1">
+                        <AlertCircle size={12} />
+                        {errors.supportPhone}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Support Hours */}
+                  <div className="space-y-2">
+                    <label className={labelCls}>Support Hours</label>
+                    <input
+                      type="text"
+                      value={formData.supportHours}
+                      onChange={(e) => updateFormField("supportHours", e.target.value)}
+                      placeholder="e.g., Mon-Fri 9am-5pm"
+                      className={inputCls}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Business Hours & Holidays */}
+              <div className="bg-white rounded-2xl border-2 border-gray-100 p-8 shadow-sm space-y-6">
+                <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
+                  <div className="p-2 bg-purple-100 rounded-xl">
+                    <Clock size={20} className="text-purple-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Business Hours</h2>
+                    <p className="text-sm text-gray-500">When your business is open</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className={labelCls}>Business Hours</label>
+                    <input
+                      type="text"
+                      value={formData.businessHours}
+                      onChange={(e) => updateFormField("businessHours", e.target.value)}
+                      placeholder="e.g., Mon-Sun 8am-8pm"
+                      className={inputCls}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className={labelCls}>Holidays / Closures</label>
+                    <input
+                      type="text"
+                      value={formData.holidays}
+                      onChange={(e) => updateFormField("holidays", e.target.value)}
+                      placeholder="e.g., Christmas, New Year"
+                      className={inputCls}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Return & Refund Policy */}
+              <div className="bg-white rounded-2xl border-2 border-gray-100 p-8 shadow-sm space-y-6">
+                <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
+                  <div className="p-2 bg-green-100 rounded-xl">
+                    <TrendingUp size={20} className="text-green-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Return & Refund Policy</h2>
+                    <p className="text-sm text-gray-500">Set your return and refund periods</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className={labelCls}>Return Period (days)</label>
+                    <input
+                      type="number"
+                      value={formData.returnDays}
+                      onChange={(e) => updateFormField("returnDays", parseInt(e.target.value) || 0)}
+                      className={`${inputCls} ${errors.returnDays ? 'border-red-500' : ''}`}
+                      min="0"
+                    />
+                    {errors.returnDays && (
+                      <span className="text-xs text-red-500 flex items-center gap-1">
+                        <AlertCircle size={12} />
+                        {errors.returnDays}
+                      </span>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <label className={labelCls}>Refund Period (days)</label>
+                    <input
+                      type="number"
+                      value={formData.refundDays}
+                      onChange={(e) => updateFormField("refundDays", parseInt(e.target.value) || 0)}
+                      className={`${inputCls} ${errors.refundDays ? 'border-red-500' : ''}`}
+                      min="0"
+                    />
+                    {errors.refundDays && (
+                      <span className="text-xs text-red-500 flex items-center gap-1">
+                        <AlertCircle size={12} />
+                        {errors.refundDays}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* AI Response Settings */}
+              <div className="bg-white rounded-2xl border-2 border-gray-100 p-8 shadow-sm space-y-6">
+                <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
+                  <div className="p-2 bg-indigo-100 rounded-xl">
+                    <Settings size={20} className="text-indigo-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">AI Response Settings</h2>
+                    <p className="text-sm text-gray-500">Customize how your bot responds</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="space-y-2">
+                    <label className={labelCls}>Temperature (0-1)</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      max="1"
+                      value={formData.responseConfig.temperature}
+                      onChange={(e) => updateNestedField("responseConfig", "temperature", parseFloat(e.target.value) || 0)}
+                      className={`${inputCls} ${errors.temperature ? 'border-red-500' : ''}`}
+                    />
+                    {errors.temperature && (
+                      <span className="text-xs text-red-500 flex items-center gap-1">
+                        <AlertCircle size={12} />
+                        {errors.temperature}
+                      </span>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <label className={labelCls}>Max Output Tokens</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={formData.responseConfig.maxOutputTokens}
+                      onChange={(e) => updateNestedField("responseConfig", "maxOutputTokens", parseInt(e.target.value) || 1)}
+                      className={`${inputCls} ${errors.maxOutputTokens ? 'border-red-500' : ''}`}
+                    />
+                    {errors.maxOutputTokens && (
+                      <span className="text-xs text-red-500 flex items-center gap-1">
+                        <AlertCircle size={12} />
+                        {errors.maxOutputTokens}
+                      </span>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <label className={labelCls}>Tone</label>
+                    <select
+                      value={formData.responseConfig.tone}
+                      onChange={(e) => updateNestedField("responseConfig", "tone", e.target.value)}
+                      className={inputCls}
+                    >
+                      <option value="professional">Professional</option>
+                      <option value="friendly">Friendly</option>
+                      <option value="casual">Casual</option>
+                      <option value="formal">Formal</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Free Trial Settings */}
+              <div className="bg-white rounded-2xl border-2 border-gray-100 p-8 shadow-sm space-y-6">
+                <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
+                  <div className="p-2 bg-amber-100 rounded-xl">
+                    <Gift size={20} className="text-amber-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Free Trial</h2>
+                    <p className="text-sm text-gray-500">Offer a free trial to new users</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-6">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.freeTrial.enabled}
+                      onChange={(e) => updateNestedField("freeTrial", "enabled", e.target.checked)}
+                      className="w-4 h-4 text-yellow-500 border-gray-300 rounded focus:ring-yellow-500"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Enable free trial</span>
+                  </label>
+
+                  {formData.freeTrial.enabled && (
+                    <div className="flex items-center gap-2">
+                      <label className={labelCls}>Trial Days</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={formData.freeTrial.days}
+                        onChange={(e) => updateNestedField("freeTrial", "days", parseInt(e.target.value) || 14)}
+                        className="w-24 border border-gray-200 bg-white rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 outline-none"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -572,7 +931,7 @@ const BotEditor = () => {
                   </div>
                   <button
                     onClick={addFaq}
-                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-purple-200"
+                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg"
                   >
                     <Plus size={16} />
                     Add FAQ
@@ -659,7 +1018,7 @@ const BotEditor = () => {
                   </div>
                   <button
                     onClick={addPricing}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-green-200"
+                    className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg"
                   >
                     <Plus size={16} />
                     Add Plan
@@ -746,7 +1105,7 @@ const BotEditor = () => {
                   </div>
                   <button
                     onClick={addDomain}
-                    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-indigo-200"
+                    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg"
                   >
                     <Plus size={16} />
                     Add Domain
@@ -793,7 +1152,7 @@ const BotEditor = () => {
 
               {/* Preview Card */}
               <div className="max-w-md mx-auto">
-                <div className="bg-gradient-to-br from-yellow-500 to-amber-600 rounded-2xl p-8 text-white shadow-xl">
+                <div className="bg-yellow-500 rounded-2xl p-8 text-white shadow-xl">
                   <div className="flex items-center gap-3 mb-6">
                     <Bot size={32} />
                     <div>
@@ -849,7 +1208,7 @@ const BotEditor = () => {
             <button
               onClick={handleSave}
               disabled={saving || !hasUnsavedChanges}
-              className="flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white px-8 py-3 rounded-xl font-bold text-sm transition-all shadow-lg shadow-yellow-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white px-8 py-3 rounded-xl font-bold text-sm transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? (
                 <>
