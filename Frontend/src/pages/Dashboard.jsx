@@ -12,7 +12,7 @@ const Dashboard = () => {
   const fetchBots = async () => {
     try {
       const res = await api.get("/bots");
-      setBots(res.data);
+      setBots(res.data.bots);
     } catch (error) {
       console.error("Error fetching bots:", error);
     } finally {

@@ -1,6 +1,20 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bot, DollarSign, HelpCircle, Plus, Sparkles } from "lucide-react";
+import {
+  Bot,
+  DollarSign,
+  HelpCircle,
+  Plus,
+  Sparkles,
+  Store,
+  Code,
+  Briefcase,
+  Mail,
+  Phone,
+  Clock,
+  Truck,
+  RotateCcw,
+} from "lucide-react";
 import api from "../../api/axios";
 import toast from "react-hot-toast";
 import { useFaqManager, usePricingManager, useFormManager } from "./hooks";
@@ -15,7 +29,23 @@ import { ChatPreview } from "./ChatPreview";
 import { LANGUAGES, VALIDATION_RULES, TIMINGS } from "../../constants";
 
 /**
- * Main CreateBot Component with Website Support
+ * Business type configurations for conditional fields
+ */
+const BUSINESS_TYPES = [
+  { value: "ecommerce", label: "E-Commerce", icon: Store },
+  { value: "saas", label: "SaaS / Software", icon: Code },
+  { value: "service", label: "Services (Salon, Spa, etc.)", icon: Briefcase },
+  { value: "restaurant", label: "Restaurant", icon: Store },
+  { value: "healthcare", label: "Healthcare", icon: Briefcase },
+  { value: "education", label: "Education", icon: Briefcase },
+  { value: "real_estate", label: "Real Estate", icon: Briefcase },
+  { value: "finance", label: "Finance", icon: DollarSign },
+  { value: "technology", label: "Technology", icon: Code },
+  { value: "other", label: "Other", icon: Briefcase },
+];
+
+/**
+ * Main Improved CreateBot Component
  */
 export const CreateBotForm = () => {
   const navigate = useNavigate();
@@ -26,10 +56,57 @@ export const CreateBotForm = () => {
 
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("basic");
+  const [businessTypeExpanded, setBusinessTypeExpanded] = useState(true);
+
+  // Memoize business-type-specific fields configuration
+  const businessTypeConfig = useMemo(() => {
+    const config = {
+      ecommerce: {
+        fields: [
+          "shippingStandard",
+          "shippingExpress",
+          "shippingInternational",
+          "returnDays",
+          "refundDays",
+          "returnPolicy",
+        ],
+        icon: Truck,
+        color: "bg-orange-100 text-orange-600",
+      },
+      saas: {
+        fields: ["freeTrial_enabled", "freeTrial_days"],
+        icon: Code,
+        color: "bg-blue-100 text-blue-600",
+      },
+      service: {
+        fields: ["appointmentDuration", "cancellationPolicy"],
+        icon: Briefcase,
+        color: "bg-purple-100 text-purple-600",
+      },
+      restaurant: {
+        fields: ["businessHours", "holidays"],
+        icon: Store,
+        color: "bg-red-100 text-red-600",
+      },
+      healthcare: {
+        fields: ["appointmentDuration", "businessHours"],
+        icon: Briefcase,
+        color: "bg-green-100 text-green-600",
+      },
+    };
+
+    return config[formData.businessType] || {
+      fields: [],
+      icon: Briefcase,
+      color: "bg-gray-100 text-gray-600",
+    };
+  }, [formData.businessType]);
 
   const TABS = [
-    { id: "basic", label: "Basic Info", icon: Bot },
-    { id: "knowledge", label: "Knowledge Base", icon: Sparkles },
+    { id: "basic", label: "Basic Info", icon: Bot, count: 5 },
+    { id: "contact", label: "Contact & Hours", icon: Mail, count: 3 },
+    { id: "business", label: "Business Details", icon: Sparkles, count: "?" },
+    { id: "knowledge", label: "Knowledge Base", icon: HelpCircle, count: 2 },
   ];
 
   const handleSubmit = useCallback(
@@ -44,15 +121,52 @@ export const CreateBotForm = () => {
       setLoading(true);
 
       try {
-        // BUILD PAYLOAD WITH WEBSITE
+        // Build comprehensive payload with all new fields
         const payload = {
           name: formData.name.trim(),
           description: formData.description.trim(),
           language: formData.language,
-          websiteURL: formData.website?.trim(),
+          businessType: formData.businessType,
+          industry: formData.industry?.trim(),
+          websiteURL: formData.websiteURL?.trim(),
+
+          // Contact information
+          supportEmail: formData.supportEmail?.trim(),
+          supportPhone: formData.supportPhone?.trim(),
+          supportHours: formData.supportHours?.trim(),
+
+          // Business hours
+          businessHours: formData.businessHours?.trim(),
+          holidays: formData.holidays?.trim(),
+
+          // E-commerce specific
+          ...(formData.businessType === "ecommerce" && {
+            shippingStandard: formData.shippingStandard?.trim(),
+            shippingExpress: formData.shippingExpress?.trim(),
+            shippingInternational: formData.shippingInternational?.trim(),
+            returnDays: parseInt(formData.returnDays) || 30,
+            refundDays: parseInt(formData.refundDays) || 5,
+            returnPolicy: formData.returnPolicy?.trim(),
+          }),
+
+          // SaaS specific
+          ...(formData.businessType === "saas" && {
+            freeTrial: {
+              enabled: formData.freeTrial_enabled === "true",
+              days: parseInt(formData.freeTrial_days) || 14,
+            },
+          }),
+
+          // Service specific
+          ...(formData.businessType === "service" && {
+            appointmentDuration: parseInt(formData.appointmentDuration) || 60,
+            cancellationPolicy: formData.cancellationPolicy?.trim(),
+          }),
+
+          // Knowledge base
           faqs: cleanFaqs(),
           pricing: cleanPricing(),
-          docs: formData.docs.trim(),
+          docs: formData.docs?.trim(),
         };
 
         if (process.env.NODE_ENV === "development") {
@@ -70,8 +184,8 @@ export const CreateBotForm = () => {
         });
         clearTimeout(timeoutId);
 
-        // Show success message with website scraping status if applicable
-        const successMessage = response.data.message || "Bot created successfully!";
+        const successMessage =
+          response.data.message || "Bot created successfully!";
         toast.success(successMessage);
 
         reset();
@@ -79,6 +193,7 @@ export const CreateBotForm = () => {
           state: {
             botCreated: true,
             botId: response.data.bot._id,
+            businessType: formData.businessType,
           },
         });
       } catch (error) {
@@ -107,74 +222,108 @@ export const CreateBotForm = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#F6F1E8] px-4 py-8">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* LEFT — FORM */}
-        <div className="bg-white rounded-3xl shadow-lg overflow-hidden flex flex-col">
-          <div className="px-8 pt-8 pb-0">
+    <div className="min-h-screen bg-gradient-to-br from-[#F6F1E8] to-[#EDE6D9] px-4 py-8">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* LEFT — FORM (2/3 width) */}
+        <div className="lg:col-span-2 bg-white rounded-3xl shadow-lg overflow-hidden flex flex-col">
+          {/* Header */}
+          <div className="px-8 pt-8 pb-4 bg-gradient-to-r from-yellow-50 to-yellow-100/50 border-b border-yellow-200">
             <div className="flex items-center gap-4 mb-6">
               <div className="bg-yellow-400 p-3 rounded-2xl shadow-sm">
-                <Bot size={22} />
+                <Bot size={24} />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">
+                <h1 className="text-3xl font-bold text-gray-900">
                   Create New Bot
                 </h1>
-                <p className="text-sm text-gray-400">
-                  Configure your multilingual AI assistant
+                <p className="text-sm text-gray-600">
+                  Configure your AI assistant with smart defaults for your business
                 </p>
               </div>
             </div>
 
-            <div className="flex gap-1 bg-[#F6F1E8] p-1 rounded-xl w-fit mb-6">
+            {/* Tab Navigation */}
+            <div className="flex gap-2 bg-white p-1 rounded-xl border border-gray-200 overflow-x-auto">
               {TABS.map(({ id, label, icon: Icon }) => (
                 <button
                   key={id}
                   type="button"
                   onClick={() => setActiveTab(id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === id
-                      ? "bg-white shadow-sm text-gray-900"
-                      : "text-gray-500 hover:text-gray-700"
-                    }`}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                    activeTab === id
+                      ? "bg-yellow-100 text-yellow-800 shadow-sm"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                  }`}
                   aria-selected={activeTab === id}
                   role="tab"
                 >
-                  <Icon size={14} />
-                  {label}
+                  <Icon size={16} />
+                  <span>{label}</span>
                 </button>
               ))}
             </div>
           </div>
 
+          {/* Form Content */}
           <form
             onSubmit={handleSubmit}
             className="flex flex-col flex-1 px-8 pb-8 overflow-y-auto"
           >
-            <div className="flex-1 space-y-4">
+            <div className="flex-1 space-y-6 py-6">
+              {/* BASIC INFO TAB */}
               {activeTab === "basic" && (
                 <div className="space-y-4 animate-fadeIn">
-                  <FormInput
-                    type="text"
-                    label="Bot Name"
-                    name="name"
-                    required
-                    value={formData.name}
-                    onChange={handleChange}
-                    placeholder="SupportBot"
-                    error={errors.name}
-                    maxLength={VALIDATION_RULES.name.maxLength}
-                    showCharCount
-                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormInput
+                      type="text"
+                      label="Bot Name"
+                      name="name"
+                      required
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder="My Support Bot"
+                      error={errors.name}
+                      maxLength={100}
+                      showCharCount
+                    />
+
+                    <FormInput
+                      type="select"
+                      label="Business Type"
+                      name="businessType"
+                      required
+                      value={formData.businessType}
+                      onChange={handleChange}
+                      error={errors.businessType}
+                      options={BUSINESS_TYPES.map((type) => ({
+                        value: type.value,
+                        label: type.label,
+                      }))}
+                    />
+                  </div>
 
                   <FormInput
                     type="text"
-                    label="Your Website URL"
-                    name="website"
-                    value={formData.website}
+                    label="Industry"
+                    name="industry"
+                    required
+                    value={formData.industry}
+                    onChange={handleChange}
+                    placeholder="e.g., Electronics Retail, Project Management SaaS"
+                    error={errors.industry}
+                    helperText="Specific industry for your business type"
+                  />
+
+                  <FormInput
+                    type="url"
+                    label="Website URL"
+                    name="websiteURL"
+                    required
+                    value={formData.websiteURL}
                     onChange={handleChange}
                     placeholder="https://example.com"
-                    error={errors.website}
-                    helperText="Optional: We'll scrape your website to train the bot"
+                    error={errors.websiteURL}
+                    helperText="Your main website URL"
                   />
 
                   <FormInput
@@ -190,13 +339,13 @@ export const CreateBotForm = () => {
 
                   <FormInput
                     type="textarea"
-                    label="Description"
+                    label="Bot Description"
                     name="description"
                     value={formData.description}
                     onChange={handleChange}
-                    placeholder="Helps customers with product queries..."
+                    placeholder="What does your bot do? e.g., Helps customers with product queries and order tracking..."
                     error={errors.description}
-                    maxLength={VALIDATION_RULES.description.maxLength}
+                    maxLength={500}
                     showCharCount
                     rows={3}
                   />
@@ -207,15 +356,286 @@ export const CreateBotForm = () => {
                     name="docs"
                     value={formData.docs}
                     onChange={handleChange}
-                    placeholder="Paste product docs, policies, or any text context..."
+                    placeholder="Paste product docs, policies, or any text context for the bot..."
                     error={errors.docs}
-                    maxLength={VALIDATION_RULES.docs.maxLength}
+                    maxLength={10000}
                     showCharCount
                     rows={3}
+                    helperText="This helps the bot provide more accurate answers"
                   />
                 </div>
               )}
 
+              {/* CONTACT & HOURS TAB */}
+              {activeTab === "contact" && (
+                <div className="space-y-4 animate-fadeIn">
+                  <Section
+                    icon={Mail}
+                    label="Support Contact"
+                    color="bg-blue-100 text-blue-600"
+                  >
+                    <div className="space-y-3">
+                      <FormInput
+                        type="email"
+                        label="Support Email"
+                        name="supportEmail"
+                        value={formData.supportEmail}
+                        onChange={handleChange}
+                        placeholder="support@example.com"
+                        error={errors.supportEmail}
+                        helperText="Where customers can email for help"
+                      />
+
+                      <FormInput
+                        type="tel"
+                        label="Support Phone"
+                        name="supportPhone"
+                        value={formData.supportPhone}
+                        onChange={handleChange}
+                        placeholder="+1-800-SUPPORT"
+                        error={errors.supportPhone}
+                      />
+
+                      <FormInput
+                        type="text"
+                        label="Support Hours"
+                        name="supportHours"
+                        value={formData.supportHours}
+                        onChange={handleChange}
+                        placeholder="Mon-Fri 9AM-6PM EST"
+                        error={errors.supportHours}
+                        helperText="e.g., Mon-Fri 9AM-6PM EST, Sat 10AM-4PM"
+                      />
+                    </div>
+                  </Section>
+
+                  <Section
+                    icon={Clock}
+                    label="Operating Hours"
+                    color="bg-purple-100 text-purple-600"
+                  >
+                    <div className="space-y-3">
+                      <FormInput
+                        type="text"
+                        label="Business Hours"
+                        name="businessHours"
+                        value={formData.businessHours}
+                        onChange={handleChange}
+                        placeholder="Mon-Fri 9AM-9PM, Sat 10AM-8PM, Sun 12PM-6PM"
+                        error={errors.businessHours}
+                        helperText="When your physical location or business operates"
+                      />
+
+                      <FormInput
+                        type="text"
+                        label="Holidays / Closures"
+                        name="holidays"
+                        value={formData.holidays}
+                        onChange={handleChange}
+                        placeholder="Closed: Christmas, New Year's, Thanksgiving"
+                        error={errors.holidays}
+                        helperText="Days when you're closed"
+                      />
+                    </div>
+                  </Section>
+                </div>
+              )}
+
+              {/* BUSINESS-TYPE SPECIFIC TAB */}
+              {activeTab === "business" && (
+                <div className="space-y-4 animate-fadeIn">
+                  {!formData.businessType ? (
+                    <div className="p-6 bg-blue-50 border border-blue-200 rounded-xl text-center">
+                      <p className="text-blue-900">
+                        ← Go back to Basic Info and select a Business Type first
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      {/* E-COMMERCE SPECIFIC FIELDS */}
+                      {formData.businessType === "ecommerce" && (
+                        <Section
+                          icon={Truck}
+                          label="Shipping & Returns"
+                          color="bg-orange-100 text-orange-600"
+                        >
+                          <div className="space-y-4">
+                            <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                              <h4 className="font-semibold text-sm text-orange-900 mb-3">
+                                Shipping Options
+                              </h4>
+                              <div className="space-y-3">
+                                <FormInput
+                                  type="text"
+                                  label="Standard Shipping"
+                                  name="shippingStandard"
+                                  value={formData.shippingStandard}
+                                  onChange={handleChange}
+                                  placeholder="3-5 business days (FREE over $50)"
+                                  helperText="e.g., timing and cost"
+                                />
+
+                                <FormInput
+                                  type="text"
+                                  label="Express Shipping"
+                                  name="shippingExpress"
+                                  value={formData.shippingExpress}
+                                  onChange={handleChange}
+                                  placeholder="1-2 business days ($9.99)"
+                                />
+
+                                <FormInput
+                                  type="text"
+                                  label="International Shipping"
+                                  name="shippingInternational"
+                                  value={formData.shippingInternational}
+                                  onChange={handleChange}
+                                  placeholder="10-21 business days"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                              <h4 className="font-semibold text-sm text-red-900 mb-3">
+                                Return & Refund Policy
+                              </h4>
+                              <div className="space-y-3">
+                                <div className="grid grid-cols-2 gap-3">
+                                  <FormInput
+                                    type="number"
+                                    label="Return Window (days)"
+                                    name="returnDays"
+                                    value={formData.returnDays}
+                                    onChange={handleChange}
+                                    placeholder="30"
+                                    min="0"
+                                    max="365"
+                                  />
+
+                                  <FormInput
+                                    type="number"
+                                    label="Refund Processing (days)"
+                                    name="refundDays"
+                                    value={formData.refundDays}
+                                    onChange={handleChange}
+                                    placeholder="5"
+                                    min="0"
+                                    max="30"
+                                  />
+                                </div>
+
+                                <FormInput
+                                  type="textarea"
+                                  label="Return Policy Details"
+                                  name="returnPolicy"
+                                  value={formData.returnPolicy}
+                                  onChange={handleChange}
+                                  placeholder="30-day money-back guarantee. Original packaging required. Free return shipping on all orders."
+                                  rows={3}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </Section>
+                      )}
+
+                      {/* SAAS SPECIFIC FIELDS */}
+                      {formData.businessType === "saas" && (
+                        <Section
+                          icon={Code}
+                          label="Free Trial Settings"
+                          color="bg-blue-100 text-blue-600"
+                        >
+                          <div className="space-y-3 bg-blue-50 p-4 rounded-lg border border-blue-200">
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="checkbox"
+                                id="freeTrial_enabled"
+                                checked={formData.freeTrial_enabled === "true"}
+                                onChange={(e) =>
+                                  handleChange({
+                                    target: {
+                                      name: "freeTrial_enabled",
+                                      value: e.target.checked ? "true" : "false",
+                                    },
+                                  })
+                                }
+                                className="w-4 h-4"
+                              />
+                              <label
+                                htmlFor="freeTrial_enabled"
+                                className="text-sm font-medium text-gray-700"
+                              >
+                                Offer free trial
+                              </label>
+                            </div>
+
+                            {formData.freeTrial_enabled === "true" && (
+                              <FormInput
+                                type="number"
+                                label="Trial Duration (days)"
+                                name="freeTrial_days"
+                                value={formData.freeTrial_days}
+                                onChange={handleChange}
+                                placeholder="14"
+                                min="1"
+                                max="90"
+                              />
+                            )}
+                          </div>
+                        </Section>
+                      )}
+
+                      {/* SERVICE SPECIFIC FIELDS */}
+                      {formData.businessType === "service" && (
+                        <Section
+                          icon={Briefcase}
+                          label="Service Details"
+                          color="bg-purple-100 text-purple-600"
+                        >
+                          <div className="space-y-3 bg-purple-50 p-4 rounded-lg border border-purple-200">
+                            <FormInput
+                              type="number"
+                              label="Default Appointment Duration (minutes)"
+                              name="appointmentDuration"
+                              value={formData.appointmentDuration}
+                              onChange={handleChange}
+                              placeholder="60"
+                              min="15"
+                              max="480"
+                              helperText="How long a typical appointment lasts"
+                            />
+
+                            <FormInput
+                              type="textarea"
+                              label="Cancellation Policy"
+                              name="cancellationPolicy"
+                              value={formData.cancellationPolicy}
+                              onChange={handleChange}
+                              placeholder="24 hours notice required. Cancellations within 24 hours forfeit 50% of payment."
+                              rows={3}
+                            />
+                          </div>
+                        </Section>
+                      )}
+
+                      {/* OTHER BUSINESS TYPES — show minimal config */}
+                      {!["ecommerce", "saas", "service"].includes(
+                        formData.businessType
+                      ) && (
+                        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 text-center">
+                          <p className="text-sm text-gray-600">
+                            Additional configuration options coming soon for{" "}
+                            <strong>{formData.businessType}</strong>
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* KNOWLEDGE BASE TAB */}
               {activeTab === "knowledge" && (
                 <div className="space-y-5 animate-fadeIn">
                   <Section
@@ -225,8 +645,8 @@ export const CreateBotForm = () => {
                   >
                     <div className="space-y-3">
                       {faqs.length === 0 && (
-                        <p className="text-xs text-gray-400 italic">
-                          No FAQs added yet.
+                        <p className="text-xs text-gray-400 italic bg-gray-50 p-3 rounded">
+                          No FAQs added yet. Add at least 5-10 for best results.
                         </p>
                       )}
                       {faqs.map((faq, i) => (
@@ -236,12 +656,13 @@ export const CreateBotForm = () => {
                           index={i}
                           onUpdate={updateFaq}
                           onRemove={removeFaq}
+                          businessType={formData.businessType}
                         />
                       ))}
                       <button
                         type="button"
                         onClick={addFaq}
-                        className="flex items-center gap-2 text-sm text-yellow-600 hover:text-yellow-700 font-medium px-3 py-2 rounded-xl hover:bg-yellow-50 transition w-full"
+                        className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium px-3 py-2 rounded-xl hover:bg-blue-50 transition w-full border border-dashed border-blue-300"
                       >
                         <Plus size={15} /> Add FAQ
                       </button>
@@ -255,7 +676,7 @@ export const CreateBotForm = () => {
                   >
                     <div className="space-y-4">
                       {pricing.length === 0 && (
-                        <div className="text-xs text-gray-400 bg-[#f5f0e8] border border-dashed border-[#e8e0d0] rounded-xl p-4 text-center">
+                        <div className="text-xs text-gray-400 bg-gray-50 border border-dashed border-gray-300 rounded-xl p-4 text-center">
                           No pricing plans added yet.
                         </div>
                       )}
@@ -271,7 +692,7 @@ export const CreateBotForm = () => {
                       <button
                         type="button"
                         onClick={addPricing}
-                        className="flex items-center justify-center gap-2 text-sm text-yellow-700 font-medium px-4 py-2.5 rounded-xl border border-dashed border-yellow-300 hover:bg-yellow-50 transition w-full"
+                        className="flex items-center justify-center gap-2 text-sm text-green-700 font-medium px-4 py-2.5 rounded-xl border border-dashed border-green-300 hover:bg-green-50 transition w-full"
                       >
                         <Plus size={15} />
                         Add Pricing Plan
@@ -282,25 +703,33 @@ export const CreateBotForm = () => {
               )}
             </div>
 
-            <div className="flex justify-between items-center pt-6 mt-4 border-t border-[#f0e8d8]">
+            {/* Footer - Sticky */}
+            <div className="flex justify-between items-center pt-6 mt-6 border-t border-gray-200">
               <button
                 type="button"
                 onClick={() => navigate("/")}
-                className="px-5 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 transition"
+                className="px-6 py-2.5 rounded-xl border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition"
               >
                 Cancel
               </button>
 
               <div className="flex gap-3">
-                {activeTab === "basic" && (
+                {activeTab !== "knowledge" && (
                   <button
                     type="button"
-                    onClick={() => setActiveTab("knowledge")}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-yellow-300 text-yellow-700 text-sm font-medium hover:bg-yellow-50 transition"
+                    onClick={() => {
+                      const tabIds = TABS.map((t) => t.id);
+                      const currentIndex = tabIds.indexOf(activeTab);
+                      if (currentIndex < tabIds.length - 1) {
+                        setActiveTab(tabIds[currentIndex + 1]);
+                      }
+                    }}
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl border border-yellow-400 text-yellow-700 text-sm font-medium hover:bg-yellow-50 transition"
                   >
                     Next <Sparkles size={14} />
                   </button>
                 )}
+
                 <LoadingButton loading={loading} type="submit">
                   <Bot size={15} /> Create Bot
                 </LoadingButton>
@@ -309,18 +738,66 @@ export const CreateBotForm = () => {
           </form>
         </div>
 
-        {/* RIGHT — CHAT PREVIEW */}
-        <ChatPreview
-          botName={formData.name}
-          botDescription={formData.description}
-        />
+        {/* RIGHT — CHAT PREVIEW (1/3 width) */}
+        <div className="lg:col-span-1">
+          <ChatPreview
+            botName={formData.name}
+            botDescription={formData.description}
+            businessType={formData.businessType}
+          />
+
+          {/* Quick Info Card */}
+          <div className="mt-6 bg-white rounded-2xl p-6 shadow-md border border-gray-100">
+            <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <Sparkles size={18} />
+              Bot Configuration
+            </h3>
+
+            <div className="space-y-3">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-600">Business Type:</span>
+                <span className="font-medium text-gray-900">
+                  {formData.businessType
+                    ? BUSINESS_TYPES.find((t) => t.value === formData.businessType)
+                        ?.label
+                    : "Not selected"}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-600">Language:</span>
+                <span className="font-medium text-gray-900">
+                  {LANGUAGES.find((l) => l.value === formData.language)?.label ||
+                    "English"}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-600">FAQs:</span>
+                <span className="font-medium text-blue-600">{faqs.length}</span>
+              </div>
+
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-600">Pricing Plans:</span>
+                <span className="font-medium text-green-600">{pricing.length}</span>
+              </div>
+
+              <div className="pt-3 border-t border-gray-200">
+                <p className="text-xs text-gray-500">
+                  ✓ All required fields are{" "}
+                  <span className="font-medium">highlighted</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <style>{`
         @keyframes fadeIn {
           from {
             opacity: 0;
-            transform: translateY(6px);
+            transform: translateY(8px);
           }
           to {
             opacity: 1;
@@ -328,9 +805,11 @@ export const CreateBotForm = () => {
           }
         }
         .animate-fadeIn {
-          animation: fadeIn 0.2s ease-out;
+          animation: fadeIn 0.25s ease-out;
         }
       `}</style>
     </div>
   );
 };
+
+export default CreateBotForm;

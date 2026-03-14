@@ -10,18 +10,31 @@ const LandingPage = () => {
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
-  const handleGetStarted = () => navigate("/signup");
+    // ✅ Auto redirect if logged in
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      navigate("/dashboard");
+    }
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [navigate]);
+
+  const handleGetStarted = () => {
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      navigate("/dashboard");
+    } else {
+      navigate("/signup");
+    }
+  };
+
   const handleLogin = () => {
-    // Implement login logic or navigation
     navigate("/login");
   };
-  const handleViewDemo = () => {
-    // Implement demo viewing logic or navigation
-    alert("Demo coming soon!");
-  }
+
 
   return (
     <div className="relative bg-white text-gray-900 overflow-hidden">
@@ -38,7 +51,7 @@ const LandingPage = () => {
             onClick={() => navigate("/")}
           >
             <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center text-white font-bold text-lg group-hover:scale-110 transition-transform duration-300">
-                <Bot className="text-white w-5 h-5" />
+              <Bot className="text-white w-5 h-5" />
             </div>
             <span className="text-2xl font-bold tracking-tight group-hover:text-yellow-400 transition-all duration-300">LinguaBot</span>
           </div>
@@ -105,7 +118,6 @@ const LandingPage = () => {
             </button>
 
             <button
-              onClick={handleViewDemo}
               className="px-8 py-4 bg-gray-100 text-gray-900 font-bold rounded-xl hover:bg-white hover:border-yellow-400 hover:text-yellow-400 active:scale-95 transition-all duration-300 border border-gray-300"
             >
               <p>View Demo</p>
