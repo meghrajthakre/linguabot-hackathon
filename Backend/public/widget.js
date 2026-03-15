@@ -10,9 +10,73 @@
     typingSpeed: 30,
     storageKey: "linguabot_history",
     storageTheme: "linguabot_theme",
+    storageLanguage: "linguabot_language",
     enableTypingSound: true,
     enableTimestamps: true,
     maxMessages: 100
+  };
+
+  // ============================================
+  // EXPANDED: 35+ SUPPORTED LANGUAGES
+  // ============================================
+  const LANGUAGES = {
+    // TIER 1: Most Common Languages
+    en: { name: "English", flag: "🇺🇸", region: "Americas" },
+    es: { name: "Español", flag: "🇪🇸", region: "Europe & Americas" },
+    fr: { name: "Français", flag: "🇫🇷", region: "Europe & Africa" },
+    de: { name: "Deutsch", flag: "🇩🇪", region: "Europe" },
+    it: { name: "Italiano", flag: "🇮🇹", region: "Europe" },
+    pt: { name: "Português", flag: "🇵🇹", region: "Europe & Americas" },
+    
+    // TIER 2: Asian Languages
+    ja: { name: "日本語", flag: "🇯🇵", region: "Asia" },
+    zh: { name: "中文", flag: "🇨🇳", region: "Asia" },
+    ko: { name: "한국어", flag: "🇰🇷", region: "Asia" },
+    th: { name: "ไทย", flag: "🇹🇭", region: "Asia" },
+    vi: { name: "Tiếng Việt", flag: "🇻🇳", region: "Asia" },
+    id: { name: "Bahasa Indonesia", flag: "🇮🇩", region: "Asia" },
+    
+    // TIER 3: South & Southeast Asian Languages
+    ar: { name: "العربية", flag: "🇸🇦", region: "Middle East & Africa" },
+    hi: { name: "हिन्दी", flag: "🇮🇳", region: "Asia" },
+    bn: { name: "বাংলা", flag: "🇧🇩", region: "Asia" },
+    ur: { name: "اردو", flag: "🇵🇰", region: "Asia" },
+    
+    // TIER 4: Eastern European Languages
+    ru: { name: "Русский", flag: "🇷🇺", region: "Europe & Asia" },
+    uk: { name: "Українська", flag: "🇺🇦", region: "Europe" },
+    pl: { name: "Polski", flag: "🇵🇱", region: "Europe" },
+    cs: { name: "Čeština", flag: "🇨🇿", region: "Europe" },
+    hu: { name: "Magyar", flag: "🇭🇺", region: "Europe" },
+    ro: { name: "Română", flag: "🇷🇴", region: "Europe" },
+    sr: { name: "Српски", flag: "🇷🇸", region: "Europe" },
+    hr: { name: "Hrvatski", flag: "🇭🇷", region: "Europe" },
+    sl: { name: "Slovenščina", flag: "🇸🇮", region: "Europe" },
+    sk: { name: "Slovenčina", flag: "🇸🇰", region: "Europe" },
+    
+    // TIER 5: Northern European Languages
+    sv: { name: "Svenska", flag: "🇸🇪", region: "Europe" },
+    no: { name: "Norsk", flag: "🇳🇴", region: "Europe" },
+    da: { name: "Dansk", flag: "🇩🇰", region: "Europe" },
+    fi: { name: "Suomi", flag: "🇫🇮", region: "Europe" },
+    nl: { name: "Nederlands", flag: "🇳🇱", region: "Europe" },
+    
+    // TIER 6: Other European Languages
+    el: { name: "Ελληνικά", flag: "🇬🇷", region: "Europe" },
+    tr: { name: "Türkçe", flag: "🇹🇷", region: "Europe & Asia" },
+    
+    // TIER 7: Southeast Asian & Pacific
+    ms: { name: "Bahasa Melayu", flag: "🇲🇾", region: "Asia" },
+    fil: { name: "Filipino", flag: "🇵🇭", region: "Asia" },
+    my: { name: "မြန်မာ", flag: "🇲🇲", region: "Asia" },
+    
+    // TIER 8: African Languages
+    sw: { name: "Kiswahili", flag: "🇹🇿", region: "Africa" },
+    af: { name: "Afrikaans", flag: "🇿🇦", region: "Africa" },
+    
+    // TIER 9: Middle East
+    he: { name: "עברית", flag: "🇮🇱", region: "Middle East" },
+    fa: { name: "فارسی", flag: "🇮🇷", region: "Middle East" },
   };
 
   /* ================= AUDIO SETUP ================= */
@@ -92,22 +156,24 @@
     * {
       box-sizing: border-box;
     }
-.chat-toggle {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 10px 25px rgba(99,102,241,0.4);
-  cursor: pointer;
-  transition: 0.3s ease;
-}
 
-.chat-toggle:hover {
-  transform: scale(1.1);
-}
+    .chat-toggle {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 25px rgba(99,102,241,0.4);
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    .chat-toggle:hover {
+      transform: scale(1.1);
+    }
+
     .lb-button {
       position: fixed;
       bottom: 24px;
@@ -137,7 +203,6 @@
       transform: scale(0.95);
     }
 
-    /* Pulse animation when there are unread messages */
     .lb-button.unread::after {
       content: '';
       position: absolute;
@@ -343,6 +408,87 @@
       50%, 100% { opacity: 0; }
     }
 
+    /* ========== LANGUAGE SELECTION ========== */
+    .lb-language-selector {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px;
+      height: 100%;
+      justify-content: flex-start;
+      overflow-y: auto;
+    }
+
+    .lb-language-title {
+      text-align: center;
+      font-weight: 600;
+      font-size: 16px;
+      color: #1f1f1f;
+      margin-bottom: 8px;
+      position: sticky;
+      top: 0;
+      background: #fefdfb;
+      z-index: 10;
+      padding: 8px 0;
+    }
+
+    .lb-language-search {
+      padding: 8px 12px;
+      border: 1px solid #e8dcc8;
+      border-radius: 20px;
+      font-size: 13px;
+      width: 100%;
+      font-family: inherit;
+      margin-bottom: 8px;
+    }
+
+    .lb-language-search:focus {
+      outline: none;
+      border-color: #f4d97d;
+    }
+
+    .lb-language-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .lb-language-btn {
+      padding: 10px 8px;
+      border: 1px solid #e8dcc8;
+      background: #fefdfb;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      font-size: 12px;
+      font-family: inherit;
+      color: #1f1f1f;
+    }
+
+    .lb-language-btn:hover {
+      background: #f5f1e8;
+      border-color: #d9cdc0;
+    }
+
+    .lb-language-btn.selected {
+      background: #f4d97d;
+      border-color: #f4d97d;
+      font-weight: 600;
+    }
+
+    .lb-language-flag {
+      font-size: 20px;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .lb-language-name {
+      font-size: 11px;
+      display: block;
+    }
+
     .lb-input-wrapper {
       display: flex;
       padding: 12px;
@@ -493,6 +639,36 @@
       background: #374151;
     }
 
+    body.lb-dark-mode .lb-language-btn {
+      background: #1f2937;
+      border-color: #374151;
+      color: #e5e7eb;
+    }
+
+    body.lb-dark-mode .lb-language-btn:hover {
+      background: #374151;
+    }
+
+    body.lb-dark-mode .lb-language-btn.selected {
+      background: #f4d97d;
+      color: #1f1f1f;
+    }
+
+    body.lb-dark-mode .lb-language-title {
+      background: #111827;
+      color: #e5e7eb;
+    }
+
+    body.lb-dark-mode .lb-language-search {
+      background: #1f2937;
+      color: #e5e7eb;
+      border-color: #374151;
+    }
+
+    body.lb-dark-mode .lb-language-search:focus {
+      border-color: #f4d97d;
+    }
+
     /* Mobile responsive */
     @media (max-width: 480px) {
       .lb-chatbox {
@@ -503,6 +679,10 @@
 
       .lb-message {
         max-width: 85%;
+      }
+
+      .lb-language-grid {
+        grid-template-columns: 1fr;
       }
     }
   `;
@@ -517,7 +697,15 @@
     saveHistory: (data) =>
       localStorage.setItem(DEFAULTS.storageKey, JSON.stringify(data)),
     getTheme: () => localStorage.getItem(DEFAULTS.storageTheme),
-    saveTheme: (t) => localStorage.setItem(DEFAULTS.storageTheme, t)
+    saveTheme: (t) => localStorage.setItem(DEFAULTS.storageTheme, t),
+    getLanguage: () => localStorage.getItem(DEFAULTS.storageLanguage),
+    saveLanguage: (lang) => {
+      if (lang === null) {
+        localStorage.removeItem(DEFAULTS.storageLanguage);
+      } else {
+        localStorage.setItem(DEFAULTS.storageLanguage, lang);
+      }
+    }
   };
 
   /* ================= UTILITY FUNCTIONS ================= */
@@ -549,6 +737,7 @@
   const button = document.createElement("button");
   button.className = "lb-button";
   button.innerHTML = SVG_ICON;
+  button.title = "Open chat";  // Native tooltip
   button.setAttribute("aria-label", "Open chat");
 
   const chatbox = document.createElement("div");
@@ -562,7 +751,7 @@
         AI Assistant
       </div>
       <div class="lb-header-controls">
-        <button id="lb-clear" title="Clear history" aria-label="Clear chat history">
+        <button id="lb-clear" title="Clear history" aria-label="Clear chat history" style="display: none;">
           <i class="ri-delete-bin-line"></i>
         </button>
         <button id="lb-theme" title="Toggle dark mode" aria-label="Toggle dark mode">
@@ -576,7 +765,13 @@
 
     <div id="lb-messages" class="lb-messages"></div>
 
-    <div class="lb-input-wrapper">
+    <div id="lb-language-selector" class="lb-language-selector" style="display: none;">
+      <div class="lb-language-title">🌐 Choose your language</div>
+      <input type="text" id="lb-language-search" class="lb-language-search" placeholder="Search languages..." />
+      <div class="lb-language-grid" id="lb-language-grid"></div>
+    </div>
+
+    <div class="lb-input-wrapper" id="lb-input-wrapper" style="display: none;">
       <input
         id="lb-input"
         type="text"
@@ -597,10 +792,123 @@
   const messagesDiv = chatbox.querySelector("#lb-messages");
   const input = chatbox.querySelector("#lb-input");
   const sendBtn = chatbox.querySelector("#lb-send");
+  const languageSelector = chatbox.querySelector("#lb-language-selector");
+  const languageGrid = chatbox.querySelector("#lb-language-grid");
+  const languageSearch = chatbox.querySelector("#lb-language-search");
+  const inputWrapper = chatbox.querySelector("#lb-input-wrapper");
+  const clearBtn = chatbox.querySelector("#lb-clear");
 
   let messages = Storage.getHistory();
   let streaming = false;
-  let hasUnread = false;
+  let selectedLanguage = Storage.getLanguage() || null;
+  let filteredLanguages = { ...LANGUAGES };
+
+  /* ================= LANGUAGE SELECTION ================= */
+  function initializeLanguageSelector() {
+    languageGrid.innerHTML = "";
+    Object.entries(filteredLanguages).forEach(([code, { name, flag }]) => {
+      const btn = document.createElement("button");
+      btn.className = "lb-language-btn";
+      if (selectedLanguage === code) {
+        btn.classList.add("selected");
+      }
+      btn.innerHTML = `<span class="lb-language-flag">${flag}</span><span class="lb-language-name">${name}</span>`;
+      btn.onclick = () => selectLanguage(code);
+      languageGrid.appendChild(btn);
+    });
+  }
+
+  // Search functionality for languages
+  languageSearch.addEventListener("input", (e) => {
+    const query = e.target.value.toLowerCase();
+    
+    if (query === "") {
+      filteredLanguages = { ...LANGUAGES };
+    } else {
+      filteredLanguages = {};
+      Object.entries(LANGUAGES).forEach(([code, data]) => {
+        if (data.name.toLowerCase().includes(query) || code.includes(query)) {
+          filteredLanguages[code] = data;
+        }
+      });
+    }
+    
+    initializeLanguageSelector();
+  });
+
+  function selectLanguage(code) {
+    selectedLanguage = code;
+    Storage.saveLanguage(code);
+
+    // Hide language selector, show chat
+    languageSelector.style.display = "none";
+    messagesDiv.style.display = "flex";
+    inputWrapper.style.display = "flex";
+    clearBtn.style.display = "flex";
+
+    // Clear messages and load chat
+    messagesDiv.innerHTML = "";
+    messages = [];
+    loadGreeting();
+  }
+
+  function loadGreeting() {
+    const greetings = {
+      en: "👋 Hi! How can I help you today?",
+      es: "👋 ¡Hola! ¿Cómo puedo ayudarte hoy?",
+      fr: "👋 Bonjour! Comment puis-je vous aider?",
+      de: "👋 Hallo! Wie kann ich dir heute helfen?",
+      it: "👋 Ciao! Come posso aiutarti?",
+      pt: "👋 Olá! Como posso ajudá-lo?",
+      ja: "👋 こんにちは！本日はどのようにお手伝いしましょうか？",
+      zh: "👋 你好！我能如何帮助你？",
+      ar: "👋 مرحبا! كيف يمكنني مساعدتك؟",
+      hi: "👋 नमस्ते! मैं आपकी कैसे मदद कर सकता हूँ?",
+      ru: "👋 Привет! Как я могу вам помочь?",
+      ko: "👋 안녕하세요! 무엇을 도와드릴까요?",
+      th: "👋 สวัสดี! ฉันช่วยคุณได้อย่างไร?",
+      vi: "👋 Xin chào! Tôi có thể giúp bạn như thế nào?",
+      id: "👋 Halo! Bagaimana saya bisa membantu Anda?",
+      bn: "👋 হ্যালো! আমি কীভাবে আপনাকে সাহায্য করতে পারি?",
+      ur: "👋 السلام علیکم! میں آپ کی کیسے مدد کر سکتا ہوں?",
+      pl: "👋 Cześć! Jak mogę Ci dzisiaj pomóc?",
+      cs: "👋 Ahoj! Jak ti mohu dnes pomoci?",
+      hu: "👋 Halló! Hogyan tudok ma segíteni?",
+      ro: "👋 Bună! Cum pot să vă ajut astazi?",
+      sr: "👋 Здраво! Како вам могу помоћи?",
+      hr: "👋 Bok! Kako vam mogu pomoći?",
+      sl: "👋 Zdravo! Kako ti lahko pomagam?",
+      sk: "👋 Ahoj! Ako ti dnes môžem pomôcť?",
+      sv: "👋 Hej! Hur kan jag hjälpa dig idag?",
+      no: "👋 Hallo! Hvordan kan jeg hjelpe deg i dag?",
+      da: "👋 Hej! Hvordan kan jeg hjælpe dig i dag?",
+      fi: "👋 Hei! Kuinka voin auttaa sinua tänään?",
+      nl: "👋 Hallo! Hoe kan ik je vandaag helpen?",
+      el: "👋 Γεια σας! Πώς μπορώ να σας βοηθήσω;",
+      tr: "👋 Merhaba! Bugün size nasıl yardımcı olabilirim?",
+      ms: "👋 Halo! Bagaimana saya dapat membantu Anda hari ini?",
+      fil: "👋 Kamusta! Paano ko matutulong kayo ngayong araw?",
+      my: "👋 မင်္ဂလာပါ! ယနေ့ အဘယ်နည်းအရာ ကူညီပေးနိုင်သည်လည်း။",
+      sw: "👋 Habari! Jinsi gani ninaweza kukusaidia leo?",
+      af: "👋 Hallo! Hoe kan ek jou vandag help?",
+      he: "👋 שלום! איך אני יכול לעזור לך היום?",
+      fa: "👋 سلام! چطور می‌تونم امروز کمکتون کنم؟",
+      uk: "👋 Привіт! Як я можу вам допомогти?",
+    };
+
+    const greeting = greetings[selectedLanguage] || greetings.en;
+    addMessage(greeting, "bot");
+  }
+
+  function showLanguageSelector() {
+    messagesDiv.style.display = "none";
+    inputWrapper.style.display = "none";
+    clearBtn.style.display = "none";
+    languageSelector.style.display = "flex";
+    filteredLanguages = { ...LANGUAGES };
+    initializeLanguageSelector();
+    languageSearch.value = "";
+  }
 
   /* ================= MESSAGE FUNCTIONS ================= */
   function addMessage(text, role, timestamp = new Date()) {
@@ -649,7 +957,7 @@
         msg.innerHTML = Utils.sanitizeHTML(text);
         streaming = false;
         sendBtn.disabled = false;
-        messages.push({ role: "bot", content: text, timestamp: new Date() });
+        messages.push({ role: "bot", content: text, timestamp: new Date(), language: selectedLanguage });
         Storage.saveHistory(messages);
       }
     }, DEFAULTS.typingSpeed);
@@ -674,13 +982,21 @@
   }
 
   function loadHistory() {
-    if (messages.length === 0) {
-      addMessage("👋 Hi! How can I help you today?", "bot");
+    if (!selectedLanguage) {
+      showLanguageSelector();
     } else {
-      messages.forEach((m) => {
-        const ts = m.timestamp ? new Date(m.timestamp) : new Date();
-        addMessage(m.content, m.role === "user" ? "user" : "bot", ts);
-      });
+      if (messages.length === 0) {
+        loadGreeting();
+      } else {
+        messages.forEach((m) => {
+          const ts = m.timestamp ? new Date(m.timestamp) : new Date();
+          addMessage(m.content, m.role === "user" ? "user" : "bot", ts);
+        });
+      }
+      messagesDiv.style.display = "flex";
+      inputWrapper.style.display = "flex";
+      clearBtn.style.display = "flex";
+      languageSelector.style.display = "none";
     }
   }
 
@@ -689,19 +1005,19 @@
       messages = [];
       messagesDiv.innerHTML = "";
       Storage.saveHistory(messages);
-      addMessage("👋 Chat cleared. How can I help?", "bot");
+      loadGreeting();
     }
   }
 
   /* ================= SEND MESSAGE ================= */
   async function sendMessage() {
-    if (streaming) return;
+    if (streaming || !selectedLanguage) return;
 
     const text = input.value.trim();
     if (!text) return;
 
     addMessage(text, "user");
-    messages.push({ role: "user", content: text, timestamp: new Date() });
+    messages.push({ role: "user", content: text, timestamp: new Date(), language: selectedLanguage });
     Storage.saveHistory(messages);
     input.value = "";
     sendBtn.disabled = true;
@@ -717,7 +1033,10 @@
             "Content-Type": "application/json",
             "x-public-key": config.publicKey
           },
-          body: JSON.stringify({ message: text })
+          body: JSON.stringify({ 
+            message: text,
+            language: selectedLanguage 
+          })
         }
       );
 
@@ -741,17 +1060,20 @@
   button.onclick = () => {
     chatbox.classList.toggle("show");
     button.classList.remove("unread");
-    hasUnread = false;
   };
 
   chatbox.querySelector("#lb-close").onclick = () => {
     chatbox.classList.add("hide");
+    // Clear stored language so it asks again next time
+    Storage.saveLanguage(null);
+    selectedLanguage = null;
+    localStorage.removeItem(languageSelector.value);
     setTimeout(() => {
       chatbox.classList.remove("show", "hide");
     }, 300);
   };
 
-  chatbox.querySelector("#lb-clear").onclick = clearHistory;
+  clearBtn.onclick = clearHistory;
 
   sendBtn.onclick = sendMessage;
 
@@ -765,6 +1087,9 @@
   input.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       chatbox.classList.add("hide");
+      // Clear stored language so it asks again next time
+      Storage.saveLanguage(null);
+      selectedLanguage = null;
       setTimeout(() => {
         chatbox.classList.remove("show", "hide");
       }, 300);

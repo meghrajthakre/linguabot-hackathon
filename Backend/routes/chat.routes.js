@@ -7,101 +7,259 @@ import { generateResponse } from "../services/claude.service.js";
 const router = express.Router();
 
 // ============================
-// COMMON QUESTIONS BY INTENT
+// INTENT PATTERNS
 // ============================
 
 const INTENT_PATTERNS = {
-    // Shipping/Delivery - MOST COMMON (WISMO - Where Is My Order)
-    shipping: {
-        pattern: /ship|deliver|delivery|tracking|track|arrive|arrival|postage|expedited|overnight|express|how long|send|dispatch|sent|package/i,
-        weight: 1.0,
-        keywords: ["shipping", "delivery", "tracking", "order status", "postage", "arrive", "expect"]
-    },
-    // Returns/Refunds - VERY COMMON
-    returns: {
-        pattern: /return|refund|exchange|send back|money back|replace|damaged|broken|defective|warranty|not satisfied|quality|issue/i,
-        weight: 1.0,
-        keywords: ["return policy", "refund", "exchange", "damaged", "broken", "defect", "warranty"]
-    },
-    // Pricing/Payment - COMMON
-    pricing: {
-        pattern: /price|cost|plan|subscription|rate|payment|how much|expensive|discount|coupon|deal|billing|charge|cost|value/i,
-        weight: 0.95,
-        keywords: ["pricing", "cost", "plan", "payment", "discount", "subscription", "billing"]
-    },
-    // Account/Login - COMMON
-    account: {
-        pattern: /account|login|password|sign up|register|reset|profile|email|username|forgot|verify|two factor|2fa|security|logout/i,
-        weight: 0.9,
-        keywords: ["account", "login", "password", "reset", "sign up", "profile", "security"]
-    },
-    // Product Info/Features - COMMON
-    product: {
-        pattern: /product|feature|specification|spec|what is|include|compatible|size|color|available|model|version|capacity|material/i,
-        weight: 0.85,
-        keywords: ["product", "features", "specifications", "available", "size", "color", "compatibility"]
-    },
-    // Business Hours - MODERATELY COMMON
-    hours: {
-        pattern: /hours?|open|close|when|available|time|business|holiday|weekend|weekday|am|pm|24\/7|operating/i,
-        weight: 0.8,
-        keywords: ["hours", "open", "closed", "available", "time", "operating", "business hours"]
-    },
-    // Technical Issues - COMMON
-    technical: {
-        pattern: /error|bug|crash|slow|not working|broken|issue|problem|fail|glitch|loading|timeout|connection|sync|not responding/i,
-        weight: 0.9,
-        keywords: ["error", "bug", "technical", "not working", "problem", "crash", "issue"]
-    },
-    // Contact/Support - COMMON
-    contact: {
-        pattern: /contact|support|call|email|help|agent|speak|phone|reach|customer service|assistance|representative|live chat/i,
-        weight: 0.75,
-        keywords: ["contact", "support", "help", "email", "phone", "chat", "agent"]
-    },
-    // Appointment/Booking - SERVICE SPECIFIC
-    appointment: {
-        pattern: /appointment|book|booking|reschedule|cancel|time|slot|availability|schedule|reserve|date|when can|how to book/i,
-        weight: 0.95,
-        keywords: ["appointment", "booking", "schedule", "time", "date", "available", "reserve"]
-    },
-    // Order Status - VERY COMMON
-    order_status: {
-        pattern: /order|status|where is|track|when will|received|arrived|dispatched|processing|pending|confirmed/i,
-        weight: 1.0,
-        keywords: ["order", "status", "track", "when", "received", "where", "arrive"]
-    },
+  shipping: {
+    pattern:
+      /ship|deliver|delivery|tracking|track|arrive|arrival|postage|expedited|overnight|express|how long|send|dispatch|sent|package/i,
+    weight: 1.0,
+    keywords: [
+      "shipping",
+      "delivery",
+      "tracking",
+      "order status",
+      "postage",
+      "arrive",
+      "expect",
+    ],
+  },
+  returns: {
+    pattern:
+      /return|refund|exchange|send back|money back|replace|damaged|broken|defective|warranty|not satisfied|quality|issue/i,
+    weight: 1.0,
+    keywords: [
+      "return policy",
+      "refund",
+      "exchange",
+      "damaged",
+      "broken",
+      "defect",
+      "warranty",
+    ],
+  },
+  pricing: {
+    pattern:
+      /price|cost|plan|subscription|rate|payment|how much|expensive|discount|coupon|deal|billing|charge|cost|value/i,
+    weight: 0.95,
+    keywords: [
+      "pricing",
+      "cost",
+      "plan",
+      "payment",
+      "discount",
+      "subscription",
+      "billing",
+    ],
+  },
+  account: {
+    pattern:
+      /account|login|password|sign up|register|reset|profile|email|username|forgot|verify|two factor|2fa|security|logout/i,
+    weight: 0.9,
+    keywords: [
+      "account",
+      "login",
+      "password",
+      "reset",
+      "sign up",
+      "profile",
+      "security",
+    ],
+  },
+  product: {
+    pattern:
+      /product|feature|specification|spec|what is|include|compatible|size|color|available|model|version|capacity|material/i,
+    weight: 0.85,
+    keywords: [
+      "product",
+      "features",
+      "specifications",
+      "available",
+      "size",
+      "color",
+      "compatibility",
+    ],
+  },
+  hours: {
+    pattern:
+      /hours?|open|close|when|available|time|business|holiday|weekend|weekday|am|pm|24\/7|operating/i,
+    weight: 0.8,
+    keywords: [
+      "hours",
+      "open",
+      "closed",
+      "available",
+      "time",
+      "operating",
+      "business hours",
+    ],
+  },
+  technical: {
+    pattern:
+      /error|bug|crash|slow|not working|broken|issue|problem|fail|glitch|loading|timeout|connection|sync|not responding/i,
+    weight: 0.9,
+    keywords: [
+      "error",
+      "bug",
+      "technical",
+      "not working",
+      "problem",
+      "crash",
+      "issue",
+    ],
+  },
+  contact: {
+    pattern:
+      /contact|support|call|email|help|agent|speak|phone|reach|customer service|assistance|representative|live chat/i,
+    weight: 0.75,
+    keywords: ["contact", "support", "help", "email", "phone", "chat", "agent"],
+  },
+  appointment: {
+    pattern:
+      /appointment|book|booking|reschedule|cancel|time|slot|availability|schedule|reserve|date|when can|how to book/i,
+    weight: 0.95,
+    keywords: [
+      "appointment",
+      "booking",
+      "schedule",
+      "time",
+      "date",
+      "available",
+      "reserve",
+    ],
+  },
+  order_status: {
+    pattern:
+      /order|status|where is|track|when will|received|arrived|dispatched|processing|pending|confirmed/i,
+    weight: 1.0,
+    keywords: [
+      "order",
+      "status",
+      "track",
+      "when",
+      "received",
+      "where",
+      "arrive",
+    ],
+  },
 };
 
 // ============================
-// DETECT INTENT WITH SCORING
+// EXPANDED LANGUAGE MAPPING (35+ languages)
 // ============================
+
+const LANGUAGE_MAP = {
+  en: "English",
+  es: "Spanish",
+  fr: "French",
+  de: "German",
+  it: "Italian",
+  pt: "Portuguese",
+  ja: "Japanese",
+  zh: "Chinese",
+  ko: "Korean",
+  th: "Thai",
+  vi: "Vietnamese",
+  id: "Indonesian",
+  ar: "Arabic",
+  hi: "Hindi",
+  bn: "Bengali",
+  ur: "Urdu",
+  ru: "Russian",
+  uk: "Ukrainian",
+  pl: "Polish",
+  cs: "Czech",
+  hu: "Hungarian",
+  ro: "Romanian",
+  sr: "Serbian",
+  hr: "Croatian",
+  sl: "Slovenian",
+  sk: "Slovak",
+  sv: "Swedish",
+  no: "Norwegian",
+  da: "Danish",
+  fi: "Finnish",
+  nl: "Dutch",
+  el: "Greek",
+  tr: "Turkish",
+  ms: "Malay",
+  fil: "Filipino",
+  my: "Burmese",
+  sw: "Swahili",
+  af: "Afrikaans",
+  he: "Hebrew",
+  fa: "Persian",
+};
+
+// ============================
+// LANGUAGE-SPECIFIC INSTRUCTIONS
+// ============================
+
+const LANGUAGE_INSTRUCTIONS = {
+  en: "You MUST respond ONLY in English. Every single word must be in English.",
+  es: "Debes responder ÚNICAMENTE en español. Cada palabra debe estar en español.",
+  fr: "Vous DEVEZ répondre UNIQUEMENT en français. Chaque mot doit être en français.",
+  de: "Sie MÜSSEN ausschließlich auf Deutsch antworten. Jedes Wort muss auf Deutsch sein.",
+  it: "Devi rispondere SOLO in italiano. Ogni parola deve essere in italiano.",
+  pt: "Você DEVE responder APENAS em português. Cada palavra deve estar em português.",
+  ja: "日本語ONLY で回答してください。すべての単語が日本語である必要があります。",
+  zh: "您必须仅用中文回答。每个单词都必须用中文。",
+  ko: "한국어로만 답변해야 합니다. 모든 단어가 한국어여야 합니다.",
+  th: "คุณต้องตอบเป็นภาษาไทยเท่านั้น ทุกคำต้องเป็นภาษาไทย",
+  vi: "Bạn PHẢI trả lời CHỈ bằng tiếng Việt. Mỗi từ phải bằng tiếng Việt.",
+  id: "Anda HARUS menjawab HANYA dalam bahasa Indonesia. Setiap kata harus dalam bahasa Indonesia.",
+  ar: "يجب عليك الرد باللغة العربية فقط. كل كلمة يجب أن تكون باللغة العربية.",
+  hi: "आपको केवल हिंदी में उत्तर देना चाहिए। प्रत्येक शब्द हिंदी में होना चाहिए।",
+  bn: "আপনাকে শুধুমাত্র বাংলায় উত্তর দিতে হবে। প্রতিটি শব্দ বাংলায় হতে হবে।",
+  ur: "آپ کو صرف اردو میں جواب دینا چاہیے۔ ہر لفظ اردو میں ہونا چاہیے۔",
+  ru: "Вы ДОЛЖНЫ отвечать ТОЛЬКО на русском языке. Каждое слово должно быть на русском.",
+  uk: "Ви ПОВИННІ відповідати ЛИШЕ українською мовою. Кожне слово має бути українською.",
+  pl: "Musisz odpowiadać TYLKO w języku polskim. Każde słowo musi być po polsku.",
+  cs: "Musíte odpovídat POUZE v češtině. Každé slovo musí být v češtině.",
+  hu: "Csak magyarul kell válaszolnia. Minden szónak magyarnak kell lennie.",
+  ro: "Trebuie să răspunzi DOAR în limba română. Fiecare cuvânt trebuie să fie în limba română.",
+  sr: "Морате одговорити САМО на српском језику. Свака реч мора бити на српском.",
+  hr: "Morate odgovoriti SAMO na hrvatskom jeziku. Svaka riječ mora biti na hrvatskom.",
+  sl: "Odgovoriти moraš SAMO v slovenščini. Vsaka beseda mora biti v slovenščini.",
+  sk: "Musíš odpovedať LEN po slovensky. Každé slovo musí byť po slovensky.",
+  sv: "Du MÅSTE svara ENDAST på svenska. Varje ord måste vara på svenska.",
+  no: "Du MÅ svare KUN på norsk. Hvert ord må være på norsk.",
+  da: "Du SKAL svare KUN på dansk. Hvert ord skal være på dansk.",
+  fi: "Sinun on vastattava VAIN suomeksi. Jokaisen sanan on oltava suomeksi.",
+  nl: "Je MOET alleen in het Nederlands antwoorden. Elk woord moet Nederlands zijn.",
+  el: "Πρέπει να απαντήσεις ΜΟΝΟ στα ελληνικά. Κάθε λέξη πρέπει να είναι στα ελληνικά.",
+  tr: "Sadece Türkçe cevap vermelisin. Her kelime Türkçe olmalıdır.",
+  ms: "Anda MESTI menjawab HANYA dalam bahasa Melayu. Setiap kata mesti dalam bahasa Melayu.",
+  fil: "Dapat mo lamang sagutin sa Filipino. Ang bawat salita ay dapat sa Filipino.",
+  my: "သင်သည် ဗမာဘာသာစကားဖြင့်သာ ဖြေကြားရမည်။ ကថ်တစ်ခုစီ ဗမာဘာသာဖြင့် ရှိရမည်။",
+  sw: "Lazima ujibu KWA LUGHA YA KISWAHILI TU. Kila neno lazima liwe kwa Kiswahili.",
+  af: "Jy MOET slegs in Afrikaans antwoord. Elke woord moet in Afrikaans wees.",
+  he: "אתה חייב להשיב רק בעברית. כל מילה חייבת להיות בעברית.",
+  fa: "شما باید فقط به فارسی پاسخ دهید. هر کلمه باید فارسی باشد.",
+};
 
 const detectIntent = (message) => {
-    const lowerMsg = message.toLowerCase();
-    let detectedIntent = "general";
-    let maxScore = 0;
+  const lowerMsg = message.toLowerCase();
+  let detectedIntent = "general";
+  let maxScore = 0;
 
-    Object.entries(INTENT_PATTERNS).forEach(([intent, { pattern, weight }]) => {
-        const match = pattern.test(lowerMsg);
-        if (match) {
-            const score = weight;
-            if (score > maxScore) {
-                detectedIntent = intent;
-                maxScore = score;
-            }
-        }
-    });
+  Object.entries(INTENT_PATTERNS).forEach(([intent, { pattern, weight }]) => {
+    const match = pattern.test(lowerMsg);
+    if (match) {
+      const score = weight;
+      if (score > maxScore) {
+        detectedIntent = intent;
+        maxScore = score;
+      }
+    }
+  });
 
-    return detectedIntent;
+  return detectedIntent;
 };
 
-// ============================
-// BUILD CONTEXT BY INTENT
-// ============================
-
 const buildContextByIntent = (bot, intent, message) => {
-    let context = `
+  let context = `
 === BUSINESS INFORMATION ===
 Name: ${bot.name}
 Type: ${bot.businessType}
@@ -117,238 +275,241 @@ Hours: ${bot.supportHours || "24/7 available"}
 
 `;
 
-    // Add context based on detected intent
-    switch (intent) {
-        case "shipping":
-        case "order_status":
-            context += `
+  // Add context based on detected intent
+  switch (intent) {
+    case "shipping":
+    case "order_status":
+      context += `
 === SHIPPING & ORDER TRACKING ===
 ${bot.shippingStandard ? `Standard: ${bot.shippingStandard}` : ""}
 ${bot.shippingExpress ? `Express: ${bot.shippingExpress}` : ""}
 ${bot.shippingInternational ? `International: ${bot.shippingInternational}` : ""}
 
-${bot.faqs
-                    ?.filter((f) => f.category === "shipping")
-                    ?.map((f) => `Q: ${f.question}\nA: ${f.answer}`)
-                    ?.join("\n\n") || "Customers can track orders on our website."
-                }
+${
+  bot.faqs
+    ?.filter((f) => f.category === "shipping")
+    ?.map((f) => `Q: ${f.question}\nA: ${f.answer}`)
+    ?.join("\n\n") || "Customers can track orders on our website."
+}
 `;
-            break;
+      break;
 
-        case "returns":
-            context += `
+    case "returns":
+      context += `
 === RETURNS & REFUNDS ===
 Return Window: ${bot.returnDays} days
 Refund Time: ${bot.refundDays} days
 
 ${bot.returnPolicy || ""}
 
-${bot.faqs
-                    ?.filter((f) => f.category === "returns")
-                    ?.map((f) => `Q: ${f.question}\nA: ${f.answer}`)
-                    ?.join("\n\n") || "For return information, visit our website."
-                }
+${
+  bot.faqs
+    ?.filter((f) => f.category === "returns")
+    ?.map((f) => `Q: ${f.question}\nA: ${f.answer}`)
+    ?.join("\n\n") || "For return information, visit our website."
+}
 `;
-            break;
+      break;
 
-        case "pricing":
-            context += `
+    case "pricing":
+      context += `
 === PRICING & PLANS ===
-${bot.pricing?.length > 0
-                    ? bot.pricing.map((p) => `${p.plan}: ${p.price} (${p.features?.join(", ")})`).join("\n")
-                    : "Pricing available on our website"
-                }
+${
+  bot.pricing?.length > 0
+    ? bot.pricing
+        .map((p) => `${p.plan}: ${p.price} (${p.features?.join(", ")})`)
+        .join("\n")
+    : "Pricing available on our website"
+}
 
-${bot.freeTrial?.enabled
-                    ? `Free Trial: ${bot.freeTrial.days} days`
-                    : ""
-                }
+${bot.freeTrial?.enabled ? `Free Trial: ${bot.freeTrial.days} days` : ""}
 
-${bot.faqs
-                    ?.filter((f) => f.category === "pricing")
-                    ?.map((f) => `Q: ${f.question}\nA: ${f.answer}`)
-                    ?.join("\n\n") || ""
-                }
+${
+  bot.faqs
+    ?.filter((f) => f.category === "pricing")
+    ?.map((f) => `Q: ${f.question}\nA: ${f.answer}`)
+    ?.join("\n\n") || ""
+}
 `;
-            break;
+      break;
 
-        case "account":
-            context += `
+    case "account":
+      context += `
 === ACCOUNT MANAGEMENT ===
-${bot.faqs
-                    ?.filter((f) => f.category === "account")
-                    ?.map((f) => `Q: ${f.question}\nA: ${f.answer}`)
-                    ?.join("\n\n") || "Account help available on our website."
-                }
+${
+  bot.faqs
+    ?.filter((f) => f.category === "account")
+    ?.map((f) => `Q: ${f.question}\nA: ${f.answer}`)
+    ?.join("\n\n") || "Account help available on our website."
+}
 `;
-            break;
+      break;
 
-        case "product":
-            context += `
+    case "product":
+      context += `
 === PRODUCT INFORMATION ===
-${bot.faqs
-                    ?.filter((f) => f.category === "product")
-                    ?.map((f) => `Q: ${f.question}\nA: ${f.answer}`)
-                    ?.join("\n\n") || "Product details available on our website."
-                }
+${
+  bot.faqs
+    ?.filter((f) => f.category === "product")
+    ?.map((f) => `Q: ${f.question}\nA: ${f.answer}`)
+    ?.join("\n\n") || "Product details available on our website."
+}
 `;
-            break;
+      break;
 
-        case "hours":
-            context += `
+    case "hours":
+      context += `
 === BUSINESS HOURS ===
 Business Hours: ${bot.businessHours || "24/7 online"}
 Support Hours: ${bot.supportHours || "24/7"}
 ${bot.holidays ? `Holidays: ${bot.holidays}` : ""}
 `;
-            break;
+      break;
 
-        case "appointment":
-            context += `
+    case "appointment":
+      context += `
 === APPOINTMENT & SCHEDULING ===
 Duration: ${bot.appointmentDuration ? `${bot.appointmentDuration} minutes` : "Variable"}
 Hours: ${bot.businessHours || "Check website"}
 ${bot.cancellationPolicy ? `Cancellation: ${bot.cancellationPolicy}` : ""}
 
-${bot.faqs
-                    ?.filter((f) => f.category === "general")
-                    ?.slice(0, 3)
-                    ?.map((f) => `Q: ${f.question}\nA: ${f.answer}`)
-                    ?.join("\n\n") || ""
-                }
+${
+  bot.faqs
+    ?.filter((f) => f.category === "general")
+    ?.slice(0, 3)
+    ?.map((f) => `Q: ${f.question}\nA: ${f.answer}`)
+    ?.join("\n\n") || ""
+}
 `;
-            break;
+      break;
 
-        case "technical":
-            context += `
+    case "technical":
+      context += `
 === TECHNICAL SUPPORT ===
 ${bot.docs || "Technical documentation available on our website."}
 
-${bot.faqs
-                    ?.filter((f) => f.category === "technical")
-                    ?.map((f) => `Q: ${f.question}\nA: ${f.answer}`)
-                    ?.join("\n\n") || ""
-                }
+${
+  bot.faqs
+    ?.filter((f) => f.category === "technical")
+    ?.map((f) => `Q: ${f.question}\nA: ${f.answer}`)
+    ?.join("\n\n") || ""
+}
 `;
-            break;
+      break;
 
-        case "contact":
-            context += `
+    case "contact":
+      context += `
 === HOW TO CONTACT US ===
 Email: ${bot.supportEmail || "Available on website"}
 Phone: ${bot.supportPhone || "Available on website"}
 Hours: ${bot.supportHours || "24/7"}
 Website: ${bot.websiteURL}
 `;
-            break;
+      break;
 
-        default:
-            // General - include top FAQs
-            context += `
+    default:
+      context += `
 === GENERAL INFORMATION ===
-${bot.faqs
-                    ?.slice(0, 5)
-                    ?.map((f) => `Q: ${f.question}\nA: ${f.answer}`)
-                    ?.join("\n\n") || "More information available on our website."
-                }
+${
+  bot.faqs
+    ?.slice(0, 5)
+    ?.map((f) => `Q: ${f.question}\nA: ${f.answer}`)
+    ?.join("\n\n") || "More information available on our website."
+}
 `;
+  }
+
+  if (bot.contentChunks?.length > 0) {
+    const topChunks = bot.contentChunks
+      .sort((a, b) => (b.relevanceScore || 0) - (a.relevanceScore || 0))
+      .slice(0, 2);
+
+    if (topChunks.length > 0) {
+      context += `\n=== ADDITIONAL INFORMATION ===\n`;
+      topChunks.forEach((chunk) => {
+        context += `${chunk.content}\n`;
+      });
     }
+  }
 
-    // Add top content chunks
-    if (bot.contentChunks?.length > 0) {
-        const topChunks = bot.contentChunks
-            .sort((a, b) => (b.relevanceScore || 0) - (a.relevanceScore || 0))
-            .slice(0, 2);
-
-        if (topChunks.length > 0) {
-            context += `\n=== ADDITIONAL INFORMATION ===\n`;
-            topChunks.forEach((chunk) => {
-                context += `${chunk.content}\n`;
-            });
-        }
-    }
-
-    return context;
+  return context;
 };
 
 // ============================
-// BUILD SYSTEM PROMPT
+// ENHANCED: BUILD SYSTEM PROMPT WITH STRONG LANGUAGE ENFORCEMENT
 // ============================
 
-const buildSystemPrompt = (bot, intent) => {
-    return `You are the official AI customer support assistant for "${bot.name}" (${bot.websiteURL}).
+const buildSystemPrompt = (bot, intent, userLanguage) => {
+  const responseLanguage = userLanguage || bot.language;
+  const languageName = LANGUAGE_MAP[responseLanguage] || LANGUAGE_MAP.en;
+  const languageInstruction = LANGUAGE_INSTRUCTIONS[responseLanguage] || LANGUAGE_INSTRUCTIONS.en;
 
-=== CRITICAL RULES ===
+  return `You are the official AI customer support assistant for "${bot.name}" (${bot.websiteURL}).
 
-1. **LANGUAGE**: Respond ONLY in ${bot.language}. Never switch languages.
+=== ⚠️ CRITICAL LANGUAGE REQUIREMENT ===
+${languageInstruction}
+THIS IS THE MOST IMPORTANT RULE. LANGUAGE ENFORCEMENT OVERRIDES ALL OTHER INSTRUCTIONS.
 
-2. **KNOWLEDGE BOUNDARIES**:
+=== RESPONSE RULES ===
+
+1. **KNOWLEDGE BOUNDARIES**:
    - Use ONLY the provided information
    - Never invent facts, prices, or policies
    - Be honest if you don't have the answer
    - Direct to website or support team when needed
 
-3. **RESPONSE QUALITY**:
+2. **RESPONSE QUALITY**:
    - Maximum 3 sentences per response
    - Lead with the direct answer
    - Add 1 supporting detail
    - Include actionable next step
 
-4. **TONE**: ${bot.responseConfig?.tone || "professional"} yet helpful.
+3. **TONE**: ${bot.responseConfig?.tone || "professional"} yet helpful.
 
-5. **SPECIFIC HANDLING BY QUESTION TYPE**:
+4. **SPECIFIC HANDLING BY QUESTION TYPE**:
 
    **Shipping/Order Tracking:**
    - Always provide specific timeframes
    - Offer tracking method
    - Mention alternative shipping if available
-   - Example: "Standard shipping takes 3-5 business days. You can track your order using the link in your confirmation email."
 
    **Returns/Refunds:**
    - State policy clearly upfront
    - Mention time limits
    - Give clear next steps
-   - Example: "We accept returns within 30 days. To start a return, log into your account > Orders > Select item > Request Return."
 
    **Pricing:**
    - Quote exact price upfront
    - Break down what's included
    - Mention any conditions
-   - Example: "Professional plan is $99/month and includes 5 users, API access, and priority support."
 
    **Account Issues:**
    - Offer specific troubleshooting steps
    - Provide reset/recovery options
    - Escalate if basic steps don't work
-   - Example: "Click 'Forgot Password' at login. Check your email for reset link (valid 24 hours)."
 
    **Technical Problems:**
    - Suggest clearing cache/cookies first
    - Try incognito/private mode
    - Check browser/app version
-   - Escalate if issue persists
 
    **Appointments (Services):**
    - Provide availability options
    - Mention duration and cancellation policy
    - Confirm time clearly
-   - Example: "We have openings Tuesday at 2 PM or Thursday at 10 AM. Sessions are 60 minutes. Cancellations require 24 hours notice."
 
    **Business Hours:**
    - State hours clearly
    - Mention any holidays/exceptions
    - Offer alternative contact method if closed
-   - Example: "We're open Mon-Fri 9AM-6PM EST. For after-hours support, email us at ${bot.supportEmail}"
 
-6. **WHEN YOU DON'T KNOW**:
+5. **WHEN YOU DON'T KNOW**:
    - Acknowledge the question
    - Say you don't have that information
-   - Provide contact method
+   - Provide contact method: ${bot.supportEmail || bot.websiteURL}
    - Offer to help with other topics
 
-   Template: "I don't have specific details on that. Please contact our team at ${bot.supportEmail} or call ${bot.supportPhone || "the number on our website"} for personalized help."
-
-7. **ESCALATION TRIGGERS**:
+6. **ESCALATION TRIGGERS**:
    Suggest contacting support for:
    - Complaints or frustrated customers
    - Account-specific issues
@@ -356,21 +517,23 @@ const buildSystemPrompt = (bot, intent) => {
    - Complex technical problems
    - Customization requests
 
-8. **WEBSITE REFERENCES**:
+7. **WEBSITE REFERENCES**:
    - Mention naturally when relevant
    - Include specific URLs when helpful
    - ✓ "See sizing guide at ${bot.websiteURL}/guides"
    - ✗ "For more info, visit our website"
 
-9. **QUALITY CHECKLIST**:
-   ☑ Answer is in the provided context?
-   ☑ Answer is specific (includes numbers/times)?
+8. **FINAL QUALITY CHECKLIST**:
+   ☑ Every single word is in ${languageName}?
+   ☑ No mixed languages?
+   ☑ Answer is in provided context?
+   ☑ Answer is specific?
    ☑ I avoided jargon?
-   ☑ I gave a clear action step?
+   ☑ Clear action step included?
    ☑ Response is 4 sentences max?
-   ☑ Tone matches brand voice?
+   ☑ Tone matches brand?
 
-Remember: Your goal is to help customers solve their problem quickly, while directing them to human support when needed.
+REMINDER: Your response MUST be 100% in ${languageName}. Do not use any other language.
 `;
 };
 
@@ -379,154 +542,173 @@ Remember: Your goal is to help customers solve their problem quickly, while dire
 // ============================
 
 router.post("/:botId", authMiddleware, async (req, res) => {
-    const startTime = Date.now();
+  const startTime = Date.now();
+
+  try {
+    const { botId } = req.params;
+    let { message, language } = req.body;
+
+    // ============================
+    // INPUT VALIDATION
+    // ============================
+
+    if (!message?.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: "EMPTY_MESSAGE",
+        message: "Message cannot be empty",
+      });
+    }
+
+    if (message.length > 3000) {
+      return res.status(400).json({
+        success: false,
+        error: "MESSAGE_TOO_LONG",
+        message: "Message must be under 3000 characters",
+      });
+    }
+
+    // ⚠️ VALIDATE language code - IMPORTANT!
+    if (language && !LANGUAGE_MAP[language]) {
+      console.error(`Invalid language code received: ${language}`);
+      return res.status(400).json({
+        success: false,
+        error: "INVALID_LANGUAGE",
+        message: `Invalid language code: ${language}. Supported: ${Object.keys(LANGUAGE_MAP).join(", ")}`,
+      });
+    }
+
+    console.log(`[API] Received request with language: ${language}`); // DEBUG
+
+    // ============================
+    // FETCH BOT
+    // ============================
+
+    const bot = await Bot.findById(botId);
+    if (!bot) {
+      return res.status(404).json({
+        success: false,
+        error: "BOT_NOT_FOUND",
+        message: "Bot not found",
+      });
+    }
+
+    if (!bot.isActive) {
+      return res.status(403).json({
+        success: false,
+        error: "BOT_INACTIVE",
+        message: "This bot is currently inactive",
+      });
+    }
+
+    message = message.trim();
+
+    // ============================
+    // DETECT INTENT
+    // ============================
+
+    const intent = detectIntent(message);
+    console.log(`[API] Detected intent: ${intent}`); // DEBUG
+
+    // ============================
+    // BUILD CONTEXT
+    // ============================
+
+    const context = buildContextByIntent(bot, intent, message);
+
+    // ============================
+    // BUILD SYSTEM PROMPT WITH STRONG LANGUAGE ENFORCEMENT
+    // ============================
+
+    const systemPrompt = buildSystemPrompt(bot, intent, language);
+    console.log(`[API] Building prompt for language: ${language || bot.language}`); // DEBUG
+
+    // ============================
+    // GENERATE RESPONSE
+    // ============================
+
+    let aiResponse;
+    try {
+      aiResponse = await generateResponse(message, context, systemPrompt, {
+        temperature: bot.responseConfig?.temperature || 0.3,
+        maxOutputTokens: bot.responseConfig?.maxOutputTokens || 250,
+      });
+
+      console.log(`[API] Response received in language: ${language}`); // DEBUG
+    } catch (apiErr) {
+      console.error("Claude API Error:", apiErr);
+      aiResponse = `I'm temporarily unable to respond. Please contact our team at ${bot.supportEmail || bot.websiteURL} or call ${bot.supportPhone || "the number on our website"}.`;
+    }
+
+    const responseTimeMs = Date.now() - startTime;
+
+    // ============================
+    // SAVE CONVERSATION
+    // ============================
 
     try {
-        const { botId } = req.params;
-        let { message } = req.body;
+      await Conversation.create({
+        botId: bot._id,
+        userMessage: message,
+        aiMessage: aiResponse,
+        responseTimeMs,
+        intent,
+        language: language || bot.language,
+        metadata: {
+          businessType: bot.businessType,
+          messageLength: message.length,
+          responseLength: aiResponse.length,
+          hasActionStep:
+            /\b(click|visit|email|call|check|log|go to|contact|reach|schedule|book)\b/i.test(
+              aiResponse,
+            ),
+          mentionsWebsite: aiResponse.includes(bot.websiteURL),
+          mentionsContact: /email|phone|call|contact|reach/i.test(aiResponse),
+        },
+      });
 
-        // ============================
-        // INPUT VALIDATION
-        // ============================
-
-        if (!message?.trim()) {
-            return res.status(400).json({
-                success: false,
-                error: "EMPTY_MESSAGE",
-                message: "Message cannot be empty",
-            });
-        }
-
-        if (message.length > 3000) {
-            return res.status(400).json({
-                success: false,
-                error: "MESSAGE_TOO_LONG",
-                message: "Message must be under 3000 characters",
-            });
-        }
-
-        // ============================
-        // FETCH BOT
-        // ============================
-
-        const bot = await Bot.findById(botId);
-        if (!bot) {
-            return res.status(404).json({
-                success: false,
-                error: "BOT_NOT_FOUND",
-                message: "Bot not found",
-            });
-        }
-
-        if (!bot.isActive) {
-            return res.status(403).json({
-                success: false,
-                error: "BOT_INACTIVE",
-                message: "This bot is currently inactive",
-            });
-        }
-
-        message = message.trim();
-
-        // ============================
-        // DETECT INTENT
-        // ============================
-
-        const intent = detectIntent(message);
-
-        // ============================
-        // BUILD CONTEXT
-        // ============================
-
-        const context = buildContextByIntent(bot, intent, message);
-
-        // ============================
-        // BUILD SYSTEM PROMPT
-        // ============================
-
-        const systemPrompt = buildSystemPrompt(bot, intent);
-
-        // ============================
-        // GENERATE RESPONSE
-        // ============================
-
-        let aiResponse;
-        try {
-            aiResponse = await generateResponse(message, context, systemPrompt, {
-                temperature: bot.responseConfig?.temperature || 0.3,
-                maxOutputTokens: bot.responseConfig?.maxOutputTokens || 250,
-            });
-        } catch (apiErr) {
-            console.error("Claude API Error:", apiErr);
-            aiResponse = `I'm temporarily unable to respond. Please contact our team at ${bot.supportEmail || bot.websiteURL} or call ${bot.supportPhone || "the number on our website"}.`;
-        }
-
-        const responseTimeMs = Date.now() - startTime;
-
-        // ============================
-        // SAVE CONVERSATION
-        // ============================
-
-        try {
-            await Conversation.create({
-                botId: bot._id,
-                userMessage: message,
-                aiMessage: aiResponse,
-                responseTimeMs,
-                intent,
-                metadata: {
-                    businessType: bot.businessType,
-                    messageLength: message.length,
-                    responseLength: aiResponse.length,
-                    hasActionStep: /\b(click|visit|email|call|check|log|go to|contact|reach|schedule|book)\b/i.test(
-                        aiResponse
-                    ),
-                    mentionsWebsite: aiResponse.includes(bot.websiteURL),
-                    mentionsContact: /email|phone|call|contact|reach/i.test(aiResponse),
-                },
-            });
-
-            // Update bot analytics
-            await Bot.updateOne(
-                { _id: bot._id },
-                {
-                    $inc: { totalConversations: 1 },
-                    lastActivityAt: new Date(),
-                    averageResponseTime:
-                        (bot.averageResponseTime * bot.totalConversations + responseTimeMs) /
-                        (bot.totalConversations + 1),
-                }
-            );
-        } catch (saveErr) {
-            console.warn("Failed to save conversation:", saveErr);
-            // Don't fail the response if conversation save fails
-        }
-
-        // ============================
-        // RETURN RESPONSE
-        // ============================
-
-        res.json({
-            success: true,
-            botId: bot._id,
-            botName: bot.name,
-            businessType: bot.businessType,
-            websiteURL: bot.websiteURL,
-            aiResponse,
-            intent,
-            responseTimeMs,
-            timestamp: new Date().toISOString(),
-        });
-    } catch (err) {
-        console.error("Unexpected error:", err);
-
-        res.status(500).json({
-            success: false,
-            error: "INTERNAL_ERROR",
-            message: "An unexpected error occurred. Please try again.",
-            timestamp: new Date().toISOString(),
-        });
+      // Update bot analytics
+      await Bot.updateOne(
+        { _id: bot._id },
+        {
+          $inc: { totalConversations: 1 },
+          lastActivityAt: new Date(),
+          averageResponseTime:
+            (bot.averageResponseTime * bot.totalConversations +
+              responseTimeMs) /
+            (bot.totalConversations + 1),
+        },
+      );
+    } catch (saveErr) {
+      console.warn("Failed to save conversation:", saveErr);
     }
+
+    // ============================
+    // RETURN RESPONSE
+    // ============================
+
+    res.json({
+      success: true,
+      botId: bot._id,
+      botName: bot.name,
+      businessType: bot.businessType,
+      websiteURL: bot.websiteURL,
+      aiResponse,
+      intent,
+      responseLanguage: language || bot.language, // ✓ Return language
+      responseTimeMs,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error("Unexpected error:", err);
+
+    res.status(500).json({
+      success: false,
+      error: "INTERNAL_ERROR",
+      message: "An unexpected error occurred. Please try again.",
+      timestamp: new Date().toISOString(),
+    });
+  }
 });
 
 // ============================
@@ -534,44 +716,48 @@ router.post("/:botId", authMiddleware, async (req, res) => {
 // ============================
 
 router.get("/:botId/history", authMiddleware, async (req, res) => {
-    try {
-        const { botId } = req.params;
-        const { limit = 50, skip = 0 } = req.query;
+  try {
+    const { botId } = req.params;
+    const { limit = 50, skip = 0, language } = req.query;
 
-        // Verify bot ownership
-        const bot = await Bot.findOne({
-            _id: botId,
-            owner: req.user.id,
-        });
+    const bot = await Bot.findOne({
+      _id: botId,
+      owner: req.user.id,
+    });
 
-        if (!bot) {
-            return res.status(404).json({
-                success: false,
-                message: "Bot not found",
-            });
-        }
-
-        const conversations = await Conversation.find({ botId })
-            .sort({ createdAt: -1 })
-            .limit(parseInt(limit))
-            .skip(parseInt(skip));
-
-        const total = await Conversation.countDocuments({ botId });
-
-        res.json({
-            success: true,
-            total,
-            limit: parseInt(limit),
-            skip: parseInt(skip),
-            conversations,
-        });
-    } catch (err) {
-        console.error("Error fetching history:", err);
-        res.status(500).json({
-            success: false,
-            message: "Failed to fetch conversation history",
-        });
+    if (!bot) {
+      return res.status(404).json({
+        success: false,
+        message: "Bot not found",
+      });
     }
+
+    const filter = { botId };
+    if (language) {
+      filter.language = language;
+    }
+
+    const conversations = await Conversation.find(filter)
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit))
+      .skip(parseInt(skip));
+
+    const total = await Conversation.countDocuments(filter);
+
+    res.json({
+      success: true,
+      total,
+      limit: parseInt(limit),
+      skip: parseInt(skip),
+      conversations,
+    });
+  } catch (err) {
+    console.error("Error fetching history:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch conversation history",
+    });
+  }
 });
 
 export default router;

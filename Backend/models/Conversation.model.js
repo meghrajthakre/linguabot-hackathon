@@ -41,6 +41,42 @@ const conversationSchema = new mongoose.Schema(
       index: true,
     },
 
+     // EXPANDED: 35+ Languages Support
+    language: {
+      type: String,
+      enum: [
+        // TIER 1: Most Common Languages (6)
+        "en", "es", "fr", "de", "it", "pt",
+        
+        // TIER 2: Asian Languages (6)
+        "ja", "zh", "ko", "th", "vi", "id",
+        
+        // TIER 3: South & Southeast Asian (4)
+        "ar", "hi", "bn", "ur",
+        
+        // TIER 4: Eastern European (10)
+        "ru", "uk", "pl", "cs", "hu", "ro",
+        "sr", "hr", "sl", "sk",
+        
+        // TIER 5: Northern European (5)
+        "sv", "no", "da", "fi", "nl",
+        
+        // TIER 6: Other European (2)
+        "el", "tr",
+        
+        // TIER 7: Southeast Asian & Pacific (3)
+        "ms", "fil", "my",
+        
+        // TIER 8: African (2)
+        "sw", "af",
+        
+        // TIER 9: Middle East (2)
+        "he", "fa"
+      ],
+      default: "en",
+      index: true,
+    },
+
     // Performance Metrics
     responseTimeMs: {
       type: Number,
