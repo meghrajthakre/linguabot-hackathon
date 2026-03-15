@@ -7,62 +7,70 @@ dotenv.config();
 if (!process.env.GEMINI_API_KEY) {
   throw new Error("GEMINI_API_KEY missing in .env");
 }
-// Groq API key is optional – if missing, fallback will be skipped
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const groq = process.env.GROQ_API_KEY ? new Groq({ apiKey: process.env.GROQ_API_KEY }) : null;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Helper to truncate context (simple word count approximation)
 function truncateToTokens(text, maxWords = 1500) {
   const words = text.split(/\s+/);
   if (words.length <= maxWords) return text;
   return words.slice(0, maxWords).join(" ") + "...";
 }
 
-// Build context from content chunks
 function buildContext(contentChunks = [], websiteContext = "") {
   const sections = [];
-
   if (contentChunks.length > 0) {
     const faq = contentChunks.filter(c => c.type === "faq").map(c => c.text).join("\n");
     const pricing = contentChunks.filter(c => c.type === "pricing").map(c => c.text).join("\n");
     const docs = contentChunks.filter(c => c.type === "doc").map(c => c.text).join("\n");
     const website = contentChunks.filter(c => c.type === "website").map(c => c.text).join("\n");
-
     if (faq) sections.push(`=== FAQs ===\n${faq}`);
     if (pricing) sections.push(`=== PRICING ===\n${pricing}`);
     if (docs) sections.push(`=== DOCUMENTATION ===\n${docs}`);
     if (website) sections.push(`=== WEBSITE INFO ===\n${website}`);
   }
-
   if (websiteContext) sections.push(`=== ADDITIONAL CONTEXT ===\n${websiteContext}`);
-
   return sections.join("\n\n");
 }
 
 /**
  * Generate response using Gemini with fallback to Groq (Llama)
+ * @param {string} userMessage
+ * @param {string} websiteContext
+ * @param {string} systemPrompt
+ * @param {Array} contentChunks
+ * @param {Object} options - { temperature, maxOutputTokens, model, retries, retryDelay }
  */
 export async function generateResponse(
   userMessage,
   websiteContext = "",
   systemPrompt = "",
-  contentChunks = []
+  contentChunks = [],
+  options = {}
 ) {
+  const {
+    temperature = 0.3,
+    maxOutputTokens = 200,
+    model = "gemini-1.5-flash", // fixed model name
+    retries = 2,
+    retryDelay = 5000,
+  } = options;
+
   const fullContext = buildContext(contentChunks, websiteContext);
   const trimmedContext = truncateToTokens(fullContext, 1500);
 
-  // --- First attempt: Gemini ---
+  // --- Attempt Gemini ---
   try {
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash", // corrected model name
+    const geminiModel = genAI.getGenerativeModel({
+      model: model, // use passed model (default gemini-1.5-flash)
       systemInstruction: systemPrompt ||
         `You are a helpful AI assistant for a website. Answer questions based on the provided website content and information. 
         Be concise, friendly, and informative. If you don't know the answer from the provided context, politely say so.`,
-      generationConfig: { temperature: 0.3, maxOutputTokens: 200 },
+      generationConfig: { temperature, maxOutputTokens },
     });
 
-    const result = await model.generateContent([
+    const result = await geminiModel.generateContent([
       { text: trimmedContext },
       { text: `User Question: ${userMessage}` },
     ]);
@@ -70,14 +78,14 @@ export async function generateResponse(
   } catch (geminiError) {
     console.warn("Gemini failed, attempting fallback to Groq:", geminiError.message);
 
-    // --- Fallback: Groq (Llama) ---
     if (!groq) {
       throw new Error("Both Gemini and Groq failed (Groq not configured)");
     }
 
+    // --- Fallback: Groq (Llama) ---
     try {
       const completion = await groq.chat.completions.create({
-        model: "llama-3.1-8b-instant", // updated model name (check Groq docs for latest)
+        model: "llama-3.1-8b-instant", // active model
         messages: [
           {
             role: "system",
@@ -86,8 +94,8 @@ export async function generateResponse(
           },
           { role: "user", content: `Context:\n${trimmedContext}\n\nQuestion: ${userMessage}` },
         ],
-        temperature: 0.3,
-        max_tokens: 200,
+        temperature,
+        max_tokens: maxOutputTokens,
       });
       return completion.choices[0]?.message?.content || "Sorry, I couldn't generate a response.";
     } catch (groqError) {
@@ -97,9 +105,6 @@ export async function generateResponse(
   }
 }
 
-/**
- * Quick response generator (simpler, uses Gemini only – but you can extend similar fallback)
- */
 export async function generateQuickResponse(userMessage, botContext = "") {
   return generateResponse(
     userMessage,
