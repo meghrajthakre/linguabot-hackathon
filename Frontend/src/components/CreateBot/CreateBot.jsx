@@ -89,9 +89,34 @@ export const CreateBotForm = () => {
         color: "bg-red-100 text-red-600",
       },
       healthcare: {
-        fields: ["appointmentDuration", "businessHours"],
+        fields: ["appointmentDuration", "businessHours", "insuranceAccepted", "licenseInfo"],
         icon: Briefcase,
         color: "bg-green-100 text-green-600",
+      },
+      education: {
+        fields: ["semesterStart", "semesterEnd", "gradeLevels", "subjectsOffered"],
+        icon: Briefcase,
+        color: "bg-yellow-100 text-yellow-600",
+      },
+      real_estate: {
+        fields: ["propertyTypes", "areasServed", "licenseInfo"],
+        icon: Briefcase,
+        color: "bg-indigo-100 text-indigo-600",
+      },
+      finance: {
+        fields: ["servicesOffered", "advisorCredentials", "consultationDuration"],
+        icon: DollarSign,
+        color: "bg-emerald-100 text-emerald-600",
+      },
+      technology: {
+        fields: ["supportTiers", "serviceLevels"],
+        icon: Code,
+        color: "bg-sky-100 text-sky-600",
+      },
+      other: {
+        fields: ["additionalInfo"],
+        icon: Briefcase,
+        color: "bg-gray-100 text-gray-600",
       },
     };
 
@@ -161,6 +186,46 @@ export const CreateBotForm = () => {
           ...(formData.businessType === "service" && {
             appointmentDuration: parseInt(formData.appointmentDuration) || 60,
             cancellationPolicy: formData.cancellationPolicy?.trim(),
+          }),
+
+          // Healthcare specific
+          ...(formData.businessType === "healthcare" && {
+            appointmentDuration: formData.appointmentDuration,
+            insuranceAccepted: formData.insuranceAccepted,
+            licenseInfo: formData.licenseInfo,
+          }),
+
+          // Education specific
+          ...(formData.businessType === "education" && {
+            semesterStart: formData.semesterStart,
+            semesterEnd: formData.semesterEnd,
+            gradeLevels: formData.gradeLevels,
+            subjectsOffered: formData.subjectsOffered,
+          }),
+
+          // Real Estate specific
+          ...(formData.businessType === "real_estate" && {
+            propertyTypes: formData.propertyTypes,
+            areasServed: formData.areasServed,
+            licenseInfo: formData.licenseInfo,
+          }),
+
+          // Finance specific
+          ...(formData.businessType === "finance" && {
+            servicesOffered: formData.servicesOffered,
+            advisorCredentials: formData.advisorCredentials,
+            consultationDuration: formData.consultationDuration,
+          }),
+
+          // Technology specific
+          ...(formData.businessType === "technology" && {
+            supportTiers: formData.supportTiers,
+            serviceLevels: formData.serviceLevels,
+          }),
+
+          // Other specific
+          ...(formData.businessType === "other" && {
+            additionalInfo: formData.additionalInfo,
           }),
 
           // Knowledge base
@@ -619,16 +684,219 @@ export const CreateBotForm = () => {
                         </Section>
                       )}
 
-                      {/* OTHER BUSINESS TYPES — show minimal config */}
-                      {!["ecommerce", "saas", "service"].includes(
-                        formData.businessType
-                      ) && (
-                        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 text-center">
-                          <p className="text-sm text-gray-600">
-                            Additional configuration options coming soon for{" "}
-                            <strong>{formData.businessType}</strong>
-                          </p>
-                        </div>
+                      {/* HEALTHCARE SPECIFIC FIELDS */}
+                      {formData.businessType === "healthcare" && (
+                        <Section
+                          icon={Briefcase}
+                          label="Healthcare Details"
+                          color="bg-green-100 text-green-600"
+                        >
+                          <div className="space-y-3 bg-green-50 p-4 rounded-lg border border-green-200">
+                            <FormInput
+                              type="number"
+                              label="Appointment Duration (minutes)"
+                              name="appointmentDuration"
+                              value={formData.appointmentDuration}
+                              onChange={handleChange}
+                              placeholder="60"
+                              min="15"
+                              max="480"
+                            />
+                            <FormInput
+                              type="text"
+                              label="Business Hours"
+                              name="businessHours"
+                              value={formData.businessHours}
+                              onChange={handleChange}
+                              placeholder="Mon-Fri 9AM-5PM, Sat 9AM-12PM"
+                            />
+                            <FormInput
+                              type="text"
+                              label="Insurance Accepted"
+                              name="insuranceAccepted"
+                              value={formData.insuranceAccepted}
+                              onChange={handleChange}
+                              placeholder="e.g., Blue Cross, Aetna, Medicare"
+                            />
+                            <FormInput
+                              type="text"
+                              label="License / Certification Info"
+                              name="licenseInfo"
+                              value={formData.licenseInfo}
+                              onChange={handleChange}
+                              placeholder="e.g., Board Certified, License #12345"
+                            />
+                          </div>
+                        </Section>
+                      )}
+
+                      {/* EDUCATION SPECIFIC FIELDS */}
+                      {formData.businessType === "education" && (
+                        <Section
+                          icon={Briefcase}
+                          label="Education Details"
+                          color="bg-yellow-100 text-yellow-600"
+                        >
+                          <div className="space-y-3 bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                            <div className="grid grid-cols-2 gap-3">
+                              <FormInput
+                                type="text"
+                                label="Semester Start"
+                                name="semesterStart"
+                                value={formData.semesterStart}
+                                onChange={handleChange}
+                                placeholder="e.g., Fall 2025"
+                              />
+                              <FormInput
+                                type="text"
+                                label="Semester End"
+                                name="semesterEnd"
+                                value={formData.semesterEnd}
+                                onChange={handleChange}
+                                placeholder="e.g., Spring 2026"
+                              />
+                            </div>
+                            <FormInput
+                              type="text"
+                              label="Grade Levels"
+                              name="gradeLevels"
+                              value={formData.gradeLevels}
+                              onChange={handleChange}
+                              placeholder="e.g., K-12, Higher Ed"
+                            />
+                            <FormInput
+                              type="text"
+                              label="Subjects Offered"
+                              name="subjectsOffered"
+                              value={formData.subjectsOffered}
+                              onChange={handleChange}
+                              placeholder="e.g., Math, Science, Literature"
+                            />
+                          </div>
+                        </Section>
+                      )}
+
+                      {/* REAL ESTATE SPECIFIC FIELDS */}
+                      {formData.businessType === "real_estate" && (
+                        <Section
+                          icon={Briefcase}
+                          label="Real Estate Details"
+                          color="bg-indigo-100 text-indigo-600"
+                        >
+                          <div className="space-y-3 bg-indigo-50 p-4 rounded-lg border border-indigo-200">
+                            <FormInput
+                              type="text"
+                              label="Property Types"
+                              name="propertyTypes"
+                              value={formData.propertyTypes}
+                              onChange={handleChange}
+                              placeholder="e.g., Residential, Commercial, Land"
+                            />
+                            <FormInput
+                              type="text"
+                              label="Areas Served"
+                              name="areasServed"
+                              value={formData.areasServed}
+                              onChange={handleChange}
+                              placeholder="e.g., Downtown, Suburbs"
+                            />
+                            <FormInput
+                              type="text"
+                              label="License Info"
+                              name="licenseInfo"
+                              value={formData.licenseInfo}
+                              onChange={handleChange}
+                              placeholder="e.g., Licensed Realtor #12345"
+                            />
+                          </div>
+                        </Section>
+                      )}
+
+                      {/* FINANCE SPECIFIC FIELDS */}
+                      {formData.businessType === "finance" && (
+                        <Section
+                          icon={DollarSign}
+                          label="Finance Details"
+                          color="bg-emerald-100 text-emerald-600"
+                        >
+                          <div className="space-y-3 bg-emerald-50 p-4 rounded-lg border border-emerald-200">
+                            <FormInput
+                              type="text"
+                              label="Services Offered"
+                              name="servicesOffered"
+                              value={formData.servicesOffered}
+                              onChange={handleChange}
+                              placeholder="e.g., Tax Planning, Wealth Management"
+                            />
+                            <FormInput
+                              type="text"
+                              label="Advisor Credentials"
+                              name="advisorCredentials"
+                              value={formData.advisorCredentials}
+                              onChange={handleChange}
+                              placeholder="e.g., CFP, CFA"
+                            />
+                            <FormInput
+                              type="number"
+                              label="Consultation Duration (minutes)"
+                              name="consultationDuration"
+                              value={formData.consultationDuration}
+                              onChange={handleChange}
+                              placeholder="60"
+                              min="15"
+                              max="240"
+                            />
+                          </div>
+                        </Section>
+                      )}
+
+                      {/* TECHNOLOGY SPECIFIC FIELDS */}
+                      {formData.businessType === "technology" && (
+                        <Section
+                          icon={Code}
+                          label="Technology Details"
+                          color="bg-sky-100 text-sky-600"
+                        >
+                          <div className="space-y-3 bg-sky-50 p-4 rounded-lg border border-sky-200">
+                            <FormInput
+                              type="text"
+                              label="Support Tiers"
+                              name="supportTiers"
+                              value={formData.supportTiers}
+                              onChange={handleChange}
+                              placeholder="e.g., Basic, Premium, Enterprise"
+                            />
+                            <FormInput
+                              type="text"
+                              label="Service Levels"
+                              name="serviceLevels"
+                              value={formData.serviceLevels}
+                              onChange={handleChange}
+                              placeholder="e.g., SLA, Uptime Guarantee"
+                            />
+                          </div>
+                        </Section>
+                      )}
+
+                      {/* OTHER BUSINESS TYPE — generic additional info */}
+                      {formData.businessType === "other" && (
+                        <Section
+                          icon={Briefcase}
+                          label="Additional Information"
+                          color="bg-gray-100 text-gray-600"
+                        >
+                          <div className="space-y-3 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <FormInput
+                              type="textarea"
+                              label="Any other details customers should know"
+                              name="additionalInfo"
+                              value={formData.additionalInfo}
+                              onChange={handleChange}
+                              placeholder="e.g., Special offers, unique policies..."
+                              rows={4}
+                            />
+                          </div>
+                        </Section>
                       )}
                     </>
                   )}

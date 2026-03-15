@@ -326,7 +326,7 @@ const BotCard = ({ bot, onDelete, isPro = false, onTrainViaUrl }) => {
             >
               {isPro ? (
                 <>
-                  <Zap size={16} fill="currentColor" />
+                  <Zap size={16} fill="" />
                   <span className="text-yellow-500 group-hover:text-white transition-colors duration-300">
                     TRAIN VIA URL
                   </span>
@@ -401,7 +401,7 @@ const BotCard = ({ bot, onDelete, isPro = false, onTrainViaUrl }) => {
               <pre className="text-xs text-yellow-300 font-mono overflow-x-auto">
                 {`<script>
   window.LinguaBotConfig = {
-    publicKey: "${bot.publicKey?.slice(0, 8)}..."
+    publicKey: "${bot.publicKey?.slice(0, 15)}..."
   };
 </script>`}
               </pre>

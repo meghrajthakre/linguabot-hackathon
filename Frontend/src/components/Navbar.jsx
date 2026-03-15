@@ -17,6 +17,7 @@ import api from "../api/axios";
 import toast from "react-hot-toast"; // <-- added
 
 const Navbar = () => {
+  
   const location = useLocation();
   const navigate = useNavigate();
   const { user, setUser } = useAuth();

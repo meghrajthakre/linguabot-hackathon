@@ -71,9 +71,7 @@ const App = () => {
             <Route path="/how-to-make-bot" element={<HowToMakeBot />} />
 
             {/* Policies */}
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/terms" element={<TermsOfService />} />
-            <Route path="/cookies" element={<CookiesPolicy />} />
+           
           </Route>
 
           {/* ================= AUTH ROUTES ================= */}
@@ -81,6 +79,10 @@ const App = () => {
           <Route path="/signup" element={<Signup />} />
 
           {/* ================= FALLBACK ROUTE ================= */}
+             <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/cookies" element={<CookiesPolicy />} />
+
           {/* Handles undefined routes */}
           <Route path="*" element={<NotFound />} />
 

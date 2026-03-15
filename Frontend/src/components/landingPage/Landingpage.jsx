@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowRight,
   Check,
@@ -395,9 +395,8 @@ const LandingPage = () => {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-sm">© {currentYear} LinguaBot. All rights reserved.</div>
             <div className="flex gap-6 text-sm">
-              <button className="hover:text-yellow-400 transition">Privacy</button>
-              <button className="hover:text-yellow-400 transition">Terms</button>
-              <button className="hover:text-yellow-400 transition">Contact</button>
+              <Link  to='/privacy' className="hover:text-yellow-400 transition" >Privacy</Link>
+              <Link  to='/terms' className="hover:text-yellow-400 transition" >Terms</Link>
             </div>
           </div>
         </div>
