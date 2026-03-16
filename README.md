@@ -79,8 +79,6 @@ product Link -  https://linguabot.digital/
                  │ • Messages  │
                  │ • Analytics │
                  └─────────────┘
----
-
 ## 📁 Project Structure
 
 The repository is organised as a **monorepo** containing three main applications: the React dashboard, the Node.js backend, and the vanilla JavaScript widget.
