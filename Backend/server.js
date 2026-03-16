@@ -28,18 +28,14 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-  origin: function(origin, callback){
-    if(!origin) return callback(null,true);
-
-    if(allowedOrigins.includes(origin)){
-      callback(null,true);
-    }else{
-      callback(new Error("CORS not allowed"));
-    }
-  },
-  credentials:true,
-  methods:["GET","POST","PUT","DELETE"],
-  allowedHeaders:["Content-Type","Authorization"]
+ origin:true,
+ credentials:true,
+ methods:["GET","POST","PUT","DELETE"],
+ allowedHeaders:[
+  "Content-Type",
+  "Authorization",
+  "x-public-key"
+ ]
 }));
 
 
@@ -54,7 +50,7 @@ app.use(express.static("public"));
 app.use('/api/auth', authRoutes);
 app.use('/api/bots', botsRoutes);
 app.use('/api/chat', chatRoutes);
-app.use('/api/public/chat', publicRoutes);
+app.use('/api/public/chat', cors({origin:"*"}), publicRoutes);
 
 // Global error handler
 app.use(errorHandler);

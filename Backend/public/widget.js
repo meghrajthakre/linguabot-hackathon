@@ -1029,7 +1029,7 @@
 
     try {
       const res = await fetch(
-        `${"https://linguabot-hackathon.onrender.com"}/api/public/chat`,
+        `${config.apiUrl || "https://linguabot-hackathon.onrender.com"}/api/public/chat`,
         {
           method: "POST",
           headers: {
@@ -1050,7 +1050,7 @@
       streamMessage(data.aiResponse || "Sorry, I didn't get a response.");
     } catch (e) {
       removeLoadingState();
-      streamMessage("❌ Error connecting to server. Please try again.");
+      streamMessage("Error connecting to server. Please try again.");
       console.error("Chat error:", e);
     } finally {
       sendBtn.disabled = false;
