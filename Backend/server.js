@@ -20,25 +20,26 @@ const PORT = process.env.PORT || 4000;
 connectDB(process.env.MONGO_URI);
 
 // ========== CORS CONFIGURATION ==========
-// Allow multiple origins for development
 const allowedOrigins = [
+  "https://linguabot.digital",
+  "https://www.linguabot.digital",
   "https://linguabot-xi.vercel.app",
-  "http://localhost:5173",
-  "http://localhost:3000",      // Alternative frontend port
-  "http://localhost:8000",      // Another common port
-  "http://127.0.0.1:5173",      // IPv4 localhost Vite
-  "http://127.0.0.1:5500",      // VS Code Live Server
-  "http://127.0.0.1:8000",      // Alternative IPv4
-  "http://127.0.0.1:15500",     // Another port
-  "http://localhost:15500",     // Another common port
+  "http://localhost:5173"
 ];
 
-
 app.use(cors({
-  origin: [
-    "https://linguabot.digital",
-    "https://www.linguabot.digital"
-  ]
+  origin: function(origin, callback){
+    if(!origin) return callback(null,true);
+
+    if(allowedOrigins.includes(origin)){
+      callback(null,true);
+    }else{
+      callback(new Error("CORS not allowed"));
+    }
+  },
+  credentials:true,
+  methods:["GET","POST","PUT","DELETE"],
+  allowedHeaders:["Content-Type","Authorization"]
 }));
 
 
