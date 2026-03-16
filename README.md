@@ -129,24 +129,24 @@ linguabot/
                             │                        LinguaBot System                         │
                             └─────────────────────────────────────────────────────────────────┘
                             
-                            ┌──────────────┐      ┌──────────────┐      ┌──────────────┐
-                            │   Dashboard  │      │    Widget    │      │   Backend    │
-                            │   (React)    │◄────►│  (Vanilla)   │◄────►│  (Node.js)   │
-                            │              │      │              │      │              │
-                            │ • Create bots│      │ • Chat UI    │      │ • Claude API │
-                            │ • Train AI   │      │ • Embed code │      │ • Lingo.dev  │
-                            │ • Analytics  │      │ • Real-time  │      │ • Auth       │
-                            └──────────────┘      └──────────────┘      └──────────────┘
-                                   │                                            │
-                                   └────────────────┬───────────────────────────┘
-                                                    │
-                                             ┌──────▼──────┐
-                                             │   MongoDB   │
-                                             │             │
-                                             │ • Bots      │
-                                             │ • Messages  │
-                                             │ • Analytics │
-                                             └─────────────┘
+                                ┌──────────────┐      ┌──────────────┐      ┌──────────────┐
+                                │   Dashboard  │      │    Widget    │      │   Backend    │
+                                │   (React)    │◄────►│  (Vanilla)   │◄────►│  (Node.js)   │
+                                │              │      │              │      │              │
+                                │ • Create bots│      │ • Chat UI    │      │ • Claude API │
+                                │ • Train AI   │      │ • Embed code │      │ • Lingo.dev  │
+                                │ • Analytics  │      │ • Real-time  │      │ • Auth       │
+                                └──────────────┘      └──────────────┘      └──────────────┘
+                                       │                                            │
+                                       └────────────────┬───────────────────────────┘
+                                                        │
+                                                 ┌──────▼──────┐
+                                                 │   MongoDB   │
+                                                 │             │
+                                                 │ • Bots      │
+                                                 │ • Messages  │
+                                                 │ • Analytics │
+                                                 └─────────────┘
 
 
 
