@@ -7,8 +7,8 @@ const Login = () => {
   const [show, setShow] = useState(false);
   const { setUser } = useAuth();
   const [form, setForm] = useState({
-    email: "",
-    password: "",
+    email: "demo@123",
+    password: "12345",
   });
 
   const [loading, setLoading] = useState(false);
@@ -21,25 +21,25 @@ const Login = () => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    setLoading(true);
-    setError("");
+    try {
+      setLoading(true);
+      setError("");
 
-    const res = await api.post("/auth/login", form, {
-      withCredentials: true,
-    });
+      const res = await api.post("/auth/login", form, {
+        withCredentials: true,
+      });
 
-    setUser(res.data.user);   // 🔥 update auth context
-    navigate("/dashboard");
+      setUser(res.data.user);   // 🔥 update auth context
+      navigate("/dashboard");
 
-  } catch (err) {
-    setError(err.response?.data?.message || "Login failed");
-  } finally {
-    setLoading(false);
-  }
-};
+    } catch (err) {
+      setError(err.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f3efe6] to-[#e8e1d2] px-6">
@@ -57,7 +57,7 @@ const Login = () => {
         <form className="space-y-4" onSubmit={handleSubmit}>
 
           <div className="relative">
-            <Mail className="absolute left-3 top-3.5 text-gray-400" size={18}/>
+            <Mail className="absolute left-3 top-3.5 text-gray-400" size={18} />
             <input
               name="email"
               onChange={handleChange}
@@ -69,7 +69,7 @@ const Login = () => {
           </div>
 
           <div className="relative">
-            <Lock className="absolute left-3 top-3.5 text-gray-400" size={18}/>
+            <Lock className="absolute left-3 top-3.5 text-gray-400" size={18} />
             <input
               name="password"
               onChange={handleChange}
@@ -82,7 +82,7 @@ const Login = () => {
               className="absolute right-3 top-3.5 cursor-pointer text-gray-400"
               onClick={() => setShow(!show)}
             >
-              {show ? <EyeOff size={18}/> : <Eye size={18}/>}
+              {show ? <EyeOff size={18} /> : <Eye size={18} />}
             </div>
           </div>
 
