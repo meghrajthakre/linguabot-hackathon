@@ -47,13 +47,16 @@ Make every website multilingual by default.
 ![Widget](docs/landingPage.png)
 
 ### Dashboard
-![Dashboard](docs/dashboard.png)
+![Dashboard](docs/Dashboard.png)
 
-### Chat Widget
-![Widget](docs/widget.png)
+### Create bot
+![create-bot](docs/create-bot.png)
 
-### chat widget
-![Widget](docs/chooseLanguage)
+### ChooseLanguage
+![chooseLanguage](docs/chooseLanguage.png)
+
+### chat
+![chat](docs/chat.png)
 
 
 
