@@ -1029,7 +1029,7 @@
 
     try {
       const res = await fetch(
-        `${config.apiUrl || "http://localhost:4000"}/api/public/chat`,
+        `${"https://linguabot-hackathon.onrender.com"}/api/public/chat`,
         {
           method: "POST",
           headers: {
