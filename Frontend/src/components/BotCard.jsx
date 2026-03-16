@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import ConfirmationModal from "./ConfirmationModal";
-import { URL } from "../../../backend/utils/constants";
+import { URL } from "../constant/url";
 
 const BotCard = ({ bot, onDelete, isPro = false, onTrainViaUrl }) => {
   // State management
