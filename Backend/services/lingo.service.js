@@ -1,131 +1,51 @@
+// services/lingo.service.js
 import dotenv from "dotenv";
 dotenv.config();
 
-import { LingoDotDevEngine } from "lingo.dev/sdk";
-
-// ===============================
-// 🔑 INIT
-// ===============================
-
 const API_KEY = process.env.LINGODOTDEV_API_KEY;
-const isEnabled = !!API_KEY;
+const ENGINE_ID = process.env.LINGODOTDEV_ENGINE_ID; // or from env
+const API_URL = "https://api.lingo.dev/process/localize";
 
-if (!isEnabled) {
-  console.warn("⚠ Lingo disabled (API key missing)");
-}
+export const translateText = async (text, source = "en", target) => {
+  // If no translation needed, return original
+  if (!text || source === target) return text;
 
-const lingo = isEnabled
-  ? new LingoDotDevEngine({
-    apiKey: API_KEY,
-    telemetry: false,
-  })
-  : null;
+  try {
+    // Wrap the text in an object (API expects key-value pairs)
+    const payload = {
+      engineId: ENGINE_ID,
+      sourceLocale: source,
+      targetLocale: target,
+      data: { content: text } // Use a meaningful key
+    };
 
-// ===============================
-// 🌍 LOCALE MAP
-// ===============================
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "X-API-Key": API_KEY,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
 
-const localeMap = {
-  en: "en-US",
-  hi: "hi-IN",
-  fr: "fr-FR",
-  es: "es-ES",
-  de: "de-DE",
-  it: "it-IT",
-  pt: "pt-BR",
-  ja: "ja-JP",
-  zh: "zh-CN",
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Lingo.dev API error (${response.status}): ${errorText}`);
+    }
+
+    const result = await response.json();
+    
+    // Extract the translated text using the same key
+    const translated = result?.data?.content;
+    
+    if (!translated) {
+      console.warn("Translation response missing expected data:", result);
+      return text; // fallback
+    }
+
+    return translated;
+  } catch (error) {
+    console.error("❌ Translation error:", error.message);
+    return text; // fallback to original
+  }
 };
-
-function normalizeLocale(locale) {
-  if (!locale) return "en-US";
-  if (locale.includes("-")) return locale;
-  return localeMap[locale] || locale;
-}
-
-// ===============================
-// 🌍 AUTO DETECT + TRANSLATE
-// ===============================
-
-export async function autoTranslate(text, targetLocale = "en-US") {
-  try {
-    if (!lingo || !text || typeof text !== "string") {
-      return {
-        text: text || "",
-        detectedLocale: "en-US",
-        translated: false,
-      };
-    }
-
-    const cleaned = text.trim();
-    if (!cleaned) {
-      return {
-        text: "",
-        detectedLocale: "en-US",
-        translated: false,
-      };
-    }
-
-    const result = await lingo.localizeText({
-      text: cleaned,
-      sourceLocale: "auto",
-      targetLocale,
-    });
-
-    // 🔒 HARD SAFETY CHECK
-    if (!result || typeof result !== "object") {
-      console.warn("⚠ Lingo returned invalid result:", result);
-      return {
-        text: cleaned,
-        detectedLocale: "en-US",
-        translated: false,
-      };
-    }
-
-    const detectedLocale =
-      typeof result.sourceLocale === "string"
-        ? result.sourceLocale
-        : "en-US";
-
-    const translatedText =
-      typeof result.text === "string"
-        ? result.text
-        : cleaned;
-
-    return {
-      text: translatedText,
-      detectedLocale,
-      translated: detectedLocale !== targetLocale,
-    };
-
-  } catch (err) {
-    console.error("❌ Lingo error:", err.message);
-
-    return {
-      text,
-      detectedLocale: "en-US",
-      translated: false,
-    };
-  }
-}
-
-// ===============================
-// 🔁 TRANSLATE EXPLICIT
-// ===============================
-
-export async function translateSafe(text, source, target) {
-  try {
-    if (!lingo || !text) return text;
-
-    const result = await lingo.localizeText({
-      text,
-      sourceLocale: normalizeLocale(source),
-      targetLocale: normalizeLocale(target),
-    });
-
-    return result?.text || text;
-  } catch (err) {
-    console.error("❌ translateSafe error:", err.message);
-    return text;
-  }
-}
