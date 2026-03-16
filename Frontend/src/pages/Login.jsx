@@ -7,7 +7,7 @@ const Login = () => {
   const [show, setShow] = useState(false);
   const { setUser } = useAuth();
   const [form, setForm] = useState({
-    email: "demo@123",
+    email: "freeTire@mail.com",
     password: "12345",
   });
 
@@ -60,6 +60,7 @@ const Login = () => {
             <Mail className="absolute left-3 top-3.5 text-gray-400" size={18} />
             <input
               name="email"
+              value={form.email}
               onChange={handleChange}
               required
               type="email"
@@ -72,6 +73,7 @@ const Login = () => {
             <Lock className="absolute left-3 top-3.5 text-gray-400" size={18} />
             <input
               name="password"
+              value={form.password} 
               onChange={handleChange}
               required
               type={show ? "text" : "password"}
