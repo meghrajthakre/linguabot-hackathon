@@ -3,6 +3,9 @@
 > Auto-localized customer support powered by  Lingo.dev + gemini. One line of code, instant multilingual support in 50+ languages.
 
 product Link -  https://linguabot.digital/
+youtube Demo Link - https://www.youtube.com/watch?v=WkF0NOClIyY
+
+
 
 
 ---
