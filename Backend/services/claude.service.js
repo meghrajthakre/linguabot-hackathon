@@ -52,7 +52,7 @@ export async function generateResponse(
   const {
     temperature = 0.3,
     maxOutputTokens = 200,
-    model = "gemini-1.5-flash", // fixed model name
+    model = "gemini-2.5-flash", // fixed model name
     retries = 2,
     retryDelay = 5000,
   } = options;

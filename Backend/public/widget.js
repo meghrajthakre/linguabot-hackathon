@@ -1007,6 +1007,7 @@
       Storage.saveHistory(messages);
       loadGreeting();
     }
+    localStorage.removeItem();
   }
 
   /* ================= SEND MESSAGE ================= */
