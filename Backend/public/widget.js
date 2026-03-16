@@ -27,7 +27,7 @@
     de: { name: "Deutsch", flag: "🇩🇪", region: "Europe" },
     it: { name: "Italiano", flag: "🇮🇹", region: "Europe" },
     pt: { name: "Português", flag: "🇵🇹", region: "Europe & Americas" },
-    
+
     // TIER 2: Asian Languages
     ja: { name: "日本語", flag: "🇯🇵", region: "Asia" },
     zh: { name: "中文", flag: "🇨🇳", region: "Asia" },
@@ -35,13 +35,13 @@
     th: { name: "ไทย", flag: "🇹🇭", region: "Asia" },
     vi: { name: "Tiếng Việt", flag: "🇻🇳", region: "Asia" },
     id: { name: "Bahasa Indonesia", flag: "🇮🇩", region: "Asia" },
-    
+
     // TIER 3: South & Southeast Asian Languages
     ar: { name: "العربية", flag: "🇸🇦", region: "Middle East & Africa" },
     hi: { name: "हिन्दी", flag: "🇮🇳", region: "Asia" },
     bn: { name: "বাংলা", flag: "🇧🇩", region: "Asia" },
     ur: { name: "اردو", flag: "🇵🇰", region: "Asia" },
-    
+
     // TIER 4: Eastern European Languages
     ru: { name: "Русский", flag: "🇷🇺", region: "Europe & Asia" },
     uk: { name: "Українська", flag: "🇺🇦", region: "Europe" },
@@ -53,27 +53,27 @@
     hr: { name: "Hrvatski", flag: "🇭🇷", region: "Europe" },
     sl: { name: "Slovenščina", flag: "🇸🇮", region: "Europe" },
     sk: { name: "Slovenčina", flag: "🇸🇰", region: "Europe" },
-    
+
     // TIER 5: Northern European Languages
     sv: { name: "Svenska", flag: "🇸🇪", region: "Europe" },
     no: { name: "Norsk", flag: "🇳🇴", region: "Europe" },
     da: { name: "Dansk", flag: "🇩🇰", region: "Europe" },
     fi: { name: "Suomi", flag: "🇫🇮", region: "Europe" },
     nl: { name: "Nederlands", flag: "🇳🇱", region: "Europe" },
-    
+
     // TIER 6: Other European Languages
     el: { name: "Ελληνικά", flag: "🇬🇷", region: "Europe" },
     tr: { name: "Türkçe", flag: "🇹🇷", region: "Europe & Asia" },
-    
+
     // TIER 7: Southeast Asian & Pacific
     ms: { name: "Bahasa Melayu", flag: "🇲🇾", region: "Asia" },
     fil: { name: "Filipino", flag: "🇵🇭", region: "Asia" },
     my: { name: "မြန်မာ", flag: "🇲🇲", region: "Asia" },
-    
+
     // TIER 8: African Languages
     sw: { name: "Kiswahili", flag: "🇹🇿", region: "Africa" },
     af: { name: "Afrikaans", flag: "🇿🇦", region: "Africa" },
-    
+
     // TIER 9: Middle East
     he: { name: "עברית", flag: "🇮🇱", region: "Middle East" },
     fa: { name: "فارسی", flag: "🇮🇷", region: "Middle East" },
@@ -821,7 +821,7 @@
   // Search functionality for languages
   languageSearch.addEventListener("input", (e) => {
     const query = e.target.value.toLowerCase();
-    
+
     if (query === "") {
       filteredLanguages = { ...LANGUAGES };
     } else {
@@ -832,7 +832,7 @@
         }
       });
     }
-    
+
     initializeLanguageSelector();
   });
 
@@ -1004,8 +1004,10 @@
     if (confirm("Clear all messages? This cannot be undone.")) {
       messages = [];
       messagesDiv.innerHTML = "";
-      Storage.saveHistory(messages);
-      loadGreeting();
+      Storage.saveHistory(messages); // clear chat history
+      Storage.saveLanguage(null);    // clear saved language
+      selectedLanguage = null;       // reset current language
+      showLanguageSelector();        // show language picker again
     }
     localStorage.removeItem();
   }
@@ -1034,9 +1036,9 @@
             "Content-Type": "application/json",
             "x-public-key": config.publicKey
           },
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             message: text,
-            language: selectedLanguage 
+            language: selectedLanguage
           })
         }
       );
