@@ -43,6 +43,17 @@ Make every website multilingual by default.
 
 
 ## 📸 Product Preview
+### LandingPage
+![Widget](docs/landingPage.png)
+
+### Dashboard
+![Dashboard](docs/dashboard.png)
+
+### Chat Widget
+![Widget](docs/widget.png)
+
+### chat widget
+![Widget](docs/chooseLanguage)
 
 
 
