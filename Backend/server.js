@@ -35,9 +35,10 @@ const allowedOrigins = [
 
 
 app.use(cors({
-  origin: allowedOrigins,
-  methods:["GET","POST","PUT","DELETE"],
-  credentials:true
+  origin: [
+    "https://linguabot.digital",
+    "https://www.linguabot.digital"
+  ]
 }));
 
 
