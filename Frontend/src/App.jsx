@@ -30,7 +30,7 @@ import CreateBot from "./components/CreateBot";
 import { AuthProvider } from "./context/AuthContext";
 import { Toaster } from "react-hot-toast";
 import NotFound from "./components/NotFound";
- 
+
 const App = () => {
   return (
     <BrowserRouter>
@@ -47,7 +47,8 @@ const App = () => {
 
           {/* ================= PUBLIC LANDING ROUTE ================= */}
           <Route path="/" element={<LandingPage />} />
-
+          <Route path="/how-to-make-bot" element={<HowToMakeBot />} />
+          
           <Route
             element={
               <ProtectedRoute>
@@ -67,23 +68,23 @@ const App = () => {
             <Route path="/bot/:id/edit" element={<BotEditor />} />
             {/* 🆕 Bot Details with Website Manager */}
 
-            {/* Guides */}
-            <Route path="/how-to-make-bot" element={<HowToMakeBot />} />
+
 
             {/* Policies */}
-           
+
           </Route>
 
           {/* ================= AUTH ROUTES ================= */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
 
+          {/* ================= POLICY ROUTES ================= */}
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/cookies" element={<CookiesPolicy />} />
+         
+          
           {/* ================= FALLBACK ROUTE ================= */}
-             <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/terms" element={<TermsOfService />} />
-            <Route path="/cookies" element={<CookiesPolicy />} />
-
-          {/* Handles undefined routes */}
           <Route path="*" element={<NotFound />} />
 
         </Routes>

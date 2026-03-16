@@ -12,14 +12,58 @@ import {
   Code,
   Users,
   Sparkles,
+  X, // Added for close button
 } from "lucide-react";
+
+// ================= DEMO VIDEO COMPONENT =================
+const DemoVideo = ({ onClose }) => {
+  return (
+    <div className="relative bg-white rounded-2xl border border-gray-200 shadow-2xl overflow-hidden">
+      {/* Header */}
+      <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-black rounded-full"></div>
+          <div>
+            <p className="text-sm font-semibold text-gray-900">LinguaBot Demo</p>
+            <p className="text-xs text-gray-500">Watch how it works</p>
+          </div>
+        </div>
+        <button
+          onClick={onClose}
+          className="p-1.5 hover:bg-gray-200 rounded-full transition-colors"
+          aria-label="Close video"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* Video Container (16:9 aspect ratio) */}
+      <div className="relative pt-[56.25%] bg-black">
+        <iframe
+          className="absolute top-0 left-0 w-full h-full"
+          src="https://www.youtube.com/watch?v=WkF0NOClIyY"
+          title="LinguaBot Demo Video"
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        ></iframe>
+      </div>
+
+      {/* Optional caption */}
+      <div className="px-6 py-3 bg-gray-50 text-sm text-gray-600 border-t border-gray-200">
+        See LinguaBot in action — automatic language detection and instant responses.
+      </div>
+    </div>
+  );
+};
 
 const LandingPage = () => {
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
+  const [showDemoVideo, setShowDemoVideo] = useState(false); // State to toggle video
   const currentYear = new Date().getFullYear();
 
-  // ✅ Redirect to dashboard if already logged in
+  // ✅ Redirect to dashboard if already logged in (commented out as before)
   // useEffect(() => {
   //   const token = localStorage.getItem("token");
   //   if (token) {
@@ -43,18 +87,27 @@ const LandingPage = () => {
   };
 
   const handleLogin = () => navigate("/login");
+
+  // Updated: show video and scroll to the demo section
   const handleViewDemo = () => {
-    document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
+    setShowDemoVideo(true);
+    // Scroll to the section smoothly
+    document.getElementById("demo-section")?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleCloseVideo = () => {
+    setShowDemoVideo(false);
   };
 
   return (
     <div className="relative bg-white text-gray-900 overflow-hidden">
       {/* ================= NAVBAR ================= */}
       <nav
-        className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled
-          ? "bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm"
-          : "bg-white"
-          }`}
+        className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+          scrolled
+            ? "bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm"
+            : "bg-white"
+        }`}
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div
@@ -156,75 +209,81 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* ================= HERO IMAGE SECTION ================= */}
-      <section className="relative px-6 pb-24">
+      {/* ================= HERO IMAGE / DEMO SECTION ================= */}
+      <section id="demo-section" className="relative px-6 pb-24">
         <div className="max-w-6xl mx-auto">
           <div className="relative group animate-fadeInUp" style={{ animationDelay: "0.4s" }}>
             <div className="absolute inset-0 bg-gray-900 rounded-2xl opacity-5 blur-2xl transform translate-y-8"></div>
 
-            {/* Chat Interface Mockup */}
-            <div className="relative bg-white rounded-2xl border border-gray-200 shadow-2xl overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-black rounded-full"></div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-900">LinguaBot</p>
-                    <p className="text-xs text-gray-500">Always online</p>
+            {/* Conditional rendering: Chat Mockup OR Demo Video */}
+            {!showDemoVideo ? (
+              // Chat Interface Mockup
+              <div className="relative bg-white rounded-2xl border border-gray-200 shadow-2xl overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-black rounded-full"></div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">LinguaBot</p>
+                      <p className="text-xs text-gray-500">Always online</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="w-2.5 h-2.5 bg-gray-400 rounded-full"></div>
+                    <div className="w-2.5 h-2.5 bg-gray-400 rounded-full"></div>
+                    <div className="w-2.5 h-2.5 bg-gray-400 rounded-full"></div>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <div className="w-2.5 h-2.5 bg-gray-400 rounded-full"></div>
-                  <div className="w-2.5 h-2.5 bg-gray-400 rounded-full"></div>
-                  <div className="w-2.5 h-2.5 bg-gray-400 rounded-full"></div>
-                </div>
-              </div>
 
-              <div className="p-6 space-y-4 bg-white min-h-96">
-                <div className="flex justify-start animate-messageSlideIn">
-                  <div className="bg-gray-100 rounded-2xl rounded-tl-md px-4 py-3 max-w-xs">
-                    <p className="text-gray-900 text-sm">
-                      Hey! How can I help you build customer relationships today? 👋
-                    </p>
+                <div className="p-6 space-y-4 bg-white min-h-96">
+                  <div className="flex justify-start animate-messageSlideIn">
+                    <div className="bg-gray-100 rounded-2xl rounded-tl-md px-4 py-3 max-w-xs">
+                      <p className="text-gray-900 text-sm">
+                        Hey! How can I help you build customer relationships today? 👋
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex justify-end animate-messageSlideIn" style={{ animationDelay: "0.2s" }}>
-                  <div className="bg-black text-white rounded-2xl rounded-tr-md px-4 py-3 max-w-xs">
-                    <p className="text-sm">I want to automate customer support</p>
+                  <div className="flex justify-end animate-messageSlideIn" style={{ animationDelay: "0.2s" }}>
+                    <div className="bg-black text-white rounded-2xl rounded-tr-md px-4 py-3 max-w-xs">
+                      <p className="text-sm">I want to automate customer support</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex justify-start animate-messageSlideIn" style={{ animationDelay: "0.4s" }}>
-                  <div className="bg-gray-100 rounded-2xl rounded-tl-md px-4 py-3 max-w-sm">
-                    <p className="text-gray-900 text-sm mb-3">
-                      Perfect! I can handle FAQ, ticket routing, and escalations. Setup takes 2 minutes. 🚀
-                    </p>
-                    <div className="flex gap-2">
-                      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
-                      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-150"></span>
-                      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-300"></span>
+                  <div className="flex justify-start animate-messageSlideIn" style={{ animationDelay: "0.4s" }}>
+                    <div className="bg-gray-100 rounded-2xl rounded-tl-md px-4 py-3 max-w-sm">
+                      <p className="text-gray-900 text-sm mb-3">
+                        Perfect! I can handle FAQ, ticket routing, and escalations. Setup takes 2 minutes. 🚀
+                      </p>
+                      <div className="flex gap-2">
+                        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
+                        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-150"></span>
+                        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce delay-300"></span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                <div className="flex gap-3">
-                  <input
-                    type="text"
-                    placeholder="Type your message..."
-                    className="flex-1 bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-yellow-400 transition-colors"
-                    disabled
-                  />
-                  <button className="p-2.5 bg-black text-white rounded-xl hover:bg-yellow-400 transition-colors" disabled>
-                    <ArrowRight className="w-5 h-5" />
-                  </button>
+                <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                  <div className="flex gap-3">
+                    <input
+                      type="text"
+                      placeholder="Type your message..."
+                      className="flex-1 bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-yellow-400 transition-colors"
+                      disabled
+                    />
+                    <button className="p-2.5 bg-black text-white rounded-xl hover:bg-yellow-400 transition-colors" disabled>
+                      <ArrowRight className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              // Demo Video Component
+              <DemoVideo onClose={handleCloseVideo} />
+            )}
           </div>
         </div>
       </section>
 
-      {/* ================= FEATURES SECTION (id for demo scroll) ================= */}
+      {/* ================= FEATURES SECTION ================= */}
       <section id="features" className="py-24 px-6 bg-gray-50 border-y border-gray-200">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
@@ -317,8 +376,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-
-
       {/* ================= TESTIMONIALS ================= */}
       <section className="py-24 px-6">
         <div className="max-w-6xl mx-auto">
@@ -394,8 +451,12 @@ const LandingPage = () => {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-sm">© {currentYear} LinguaBot. All rights reserved.</div>
             <div className="flex gap-6 text-sm">
-              <Link to='/privacy' className="hover:text-yellow-400 transition" >Privacy</Link>
-              <Link to='/terms' className="hover:text-yellow-400 transition" >Terms</Link>
+              <Link to="/privacy" className="hover:text-yellow-400 transition">
+                Privacy
+              </Link>
+              <Link to="/terms" className="hover:text-yellow-400 transition">
+                Terms
+              </Link>
             </div>
           </div>
         </div>
