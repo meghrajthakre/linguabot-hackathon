@@ -46,6 +46,7 @@ app.use(cors({
 // Middleware
 app.use(express.json()); // parse JSON body
 app.use(cookieParser());
+app.options("*",cors());
 // app.use(rateLimiter); // global rate limiter
 
 // Register routes
