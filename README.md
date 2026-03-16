@@ -6,6 +6,8 @@
 
 -youtube Demo Link - https://www.youtube.com/watch?v=WkF0NOClIyY
 
+-medium link - https://medium.com/@meghrajthakre444/how-i-built-linguabot-turning-one-line-of-code-into-multilingual-customer-support-1f8c5d13fe76
+
 
 
 
