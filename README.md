@@ -299,33 +299,65 @@ Visitors can now chat in any language.
 ## 🌐 Lingo.dev Integration Flow
 
 ```javascript
-// Inside chat.routes.js or a controller
-import { translateText } from '../services/lingo.service.js';
-import { generateClaudeResponse } from '../services/claude.service.js';
+import dotenv from "dotenv";
+dotenv.config();
 
-async function handleChatMessage(userMessage, botId) {
-  // 1. Detect language (using Lingo.dev SDK)
-  const userLocale = await lingo.detectLanguage(userMessage); // e.g., "hi"
-  
-  // 2. Translate user message to English (if needed)
-  const englishQuery = userLocale === 'en' 
-    ? userMessage 
-    : await translateText(userMessage, userLocale, 'en');
-  
-  // 3. Get AI response from Claude (in English)
-  const englishResponse = await generateClaudeResponse(englishQuery, botId);
-  
-  // 4. Translate response back to user's language
-  const finalResponse = userLocale === 'en'
-    ? englishResponse
-    : await translateText(englishResponse, 'en', userLocale);
-  
-  // 5. Return with locale info for UI badge
-  return {
-    text: finalResponse,
-    locale: userLocale
-  };
-}
+const API_KEY = process.env.LINGODOTDEV_API_KEY;
+const ENGINE_ID = process.env.LINGODOTDEV_ENGINE_ID; // optional, can be set in env
+const API_URL = "https://api.lingo.dev/process/localize";
+
+/**
+ * Translates text between languages using Lingo.dev API.
+ * Falls back to original text if translation fails or not needed.
+ * 
+ * @param {string} text - Text to translate
+ * @param {string} source - Source locale (e.g., "en")
+ * @param {string} target - Target locale (e.g., "hi")
+ * @returns {Promise<string>} Translated text
+ */
+export const translateText = async (text, source = "en", target) => {
+  // If no translation needed, return original
+  if (!text || source === target) return text;
+
+  try {
+    // Wrap the text in an object (API expects key-value pairs)
+    const payload = {
+      engineId: ENGINE_ID,
+      sourceLocale: source,
+      targetLocale: target,
+      data: { content: text } // Use a meaningful key
+    };
+
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "X-API-Key": API_KEY,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Lingo.dev API error (${response.status}): ${errorText}`);
+    }
+
+    const result = await response.json();
+    
+    // Extract the translated text using the same key
+    const translated = result?.data?.content;
+    
+    if (!translated) {
+      console.warn("Translation response missing expected data:", result);
+      return text; // fallback
+    }
+
+    return translated;
+  } catch (error) {
+    console.error(" Translation error:", error.message);
+    return text; // fallback to original
+  }
+};
 ```
 
 ---
