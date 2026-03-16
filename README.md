@@ -1,4 +1,4 @@
-# 🤖 LinguaBot — Multilingual AI Customer Support Bot assistance
+#🤖 LinguaBot — AI Customer Support Assistant with Real-Time Multilingual Conversations
 
 > Auto-localized customer support powered by  Lingo.dev + gemini. One line of code, instant multilingual support in 50+ languages.
 
