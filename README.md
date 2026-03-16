@@ -4,44 +4,48 @@
 
 product Link -  https://linguabot.digital/
 
-## 📋 Table of Contents
-
-* [The Problem](#the-problem)
-* [The Solution](#the-solution)
-* [Key Features](#-key-features)
-* [Architecture](#-architecture)
-* [Project Structure](#-project-structure)
-* [Tech Stack](#-tech-stack)
-* [Getting Started](#-getting-started)
-* [How to Use](#-how-to-use-linguabot)
-* [Lingo.dev Integration Flow](#-lingodev-integration-flow)
-* [Analytics & Insights](#-analytics--insights)
-* [Customization](#-customization)
-* [Security](#-security)
-* [Scaling Considerations](#-scaling-considerations)
-* [Deployment](#-deployment)
-* [Contributing](#-contributing)
-* [License](#-license)
-* [Links](#-links)
 
 ---
 
-## The Problem
+## 🚨 The Problem
 
-* **High costs** – Hiring multilingual support agents is expensive and hard to scale.
-* **Language barriers** – Traditional chatbots fail with non-English queries, forcing users to switch languages manually.
-* **Fragmented experience** – Even when translation tools are used, responses are often clunky and lack business-specific context.
+Modern businesses struggle to provide effective customer support across multiple languages:
 
-## The Solution
+- **High operational costs** – Hiring and managing multilingual support teams is expensive and difficult to scale.
+- **Language barriers** – Traditional chatbots often fail to understand non-English queries, forcing users to communicate in unfamiliar languages.
+- **Poor user experience** – Translation tools often produce inaccurate or context-less responses that reduce customer satisfaction.
+- **Limited scalability** – Expanding support to new regions requires additional resources and infrastructure.
 
-**LinguaBot** is a drop-in AI widget that eliminates language barriers:
+## 💡 The Solution
 
-* **One embed code** → Instant multilingual support on any website.
-* **Auto language detection** – Uses Lingo.dev to detect the visitor’s language and respond in kind, with zero configuration.
-* **AI-powered** – Claude Sonnet 4.5 generates context-aware answers based on your business knowledge base.
-* **Train once in English** – Upload FAQs, docs, or pricing info; the bot works in 50+ languages automatically.
+**LinguaBot** is an AI-powered multilingual customer support widget designed to remove language barriers instantly.
+
+- **One-line integration** – Add a simple embed script and enable multilingual support on any website.
+- **Automatic language detection** – Powered by Lingo.dev to detect and respond in the visitor's preferred language automatically.
+- **AI-driven responses** – Claude Sonnet 4.5 generates intelligent, context-aware answers based on your business knowledge base.
+- **Train once, support globally** – Upload your content in one language and automatically serve customers in 50+ languages.
+- **Seamless customer experience** – Natural conversations without manual language switching.
+
+
+ ## ❤️ Why I Built This
+
+Businesses lose customers daily due to language barriers.
+
+LinguaBot was built to make customer support truly global.
+
+Instead of hiring expensive multilingual teams,
+businesses can now support every language instantly.
+
+Mission:
+Make every website multilingual by default.
 
 ---
+
+
+## 📸 Product Preview
+
+
+
 
 ## ✨ Key Features
 
@@ -164,6 +168,22 @@ linguabot/
 
 ---
 
+## ⚙️ How LinguaBot Works
+
+1 User sends message (any language)
+
+2 Lingo.dev detects language
+
+3 Message translated to English
+
+4 Gemini generates response
+
+5 Response translated back
+
+6 Widget displays localized reply
+
+Result → Seamless multilingual conversation
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -256,6 +276,8 @@ Paste your FAQs, product info, pricing.
 **Step 4: 
 Copy the code and paste into your VS-code
 Install on Website**
+
+
 
 ```html
 <script>
@@ -428,6 +450,15 @@ Live Demo: https://linguabot.app
 Documentation: [docs/API_REFERENCE.md](https://linguabot.digital/how-to-make-bot)
 
 Lingo.dev: https://lingo.dev
+
+## 👨‍💻 Author
+
+Meghraj Thakre
+
+Full Stack Developer
+
+GitHub:
+https://github.com/meghrajthakre
 
 
 Built for Lingo.dev Hackathon #9 — February 2026
