@@ -41,7 +41,7 @@ const DemoVideo = ({ onClose }) => {
       <div className="relative pt-[56.25%] bg-black">
         <iframe
           className="absolute top-0 left-0 w-full h-full"
-          src="https://www.youtube.com/watch?v=WkF0NOClIyY"
+          src="https://www.youtube.com/embed/WkF0NOClIyY"
           title="LinguaBot Demo Video"
           frameBorder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -103,11 +103,10 @@ const LandingPage = () => {
     <div className="relative bg-white text-gray-900 overflow-hidden">
       {/* ================= NAVBAR ================= */}
       <nav
-        className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-          scrolled
+        className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled
             ? "bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm"
             : "bg-white"
-        }`}
+          }`}
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div
