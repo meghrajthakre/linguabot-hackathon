@@ -51,11 +51,10 @@ const LandingPage = () => {
     <div className="relative bg-white text-gray-900 overflow-hidden">
       {/* ================= NAVBAR ================= */}
       <nav
-        className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-          scrolled
-            ? "bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm"
-            : "bg-white"
-        }`}
+        className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled
+          ? "bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm"
+          : "bg-white"
+          }`}
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div
@@ -105,13 +104,13 @@ const LandingPage = () => {
             style={{ animationDelay: "0.1s" }}
           >
             <h1 className="text-5xl md:text-7xl font-extrabold leading-tight tracking-tight">
-              Build an AI Chatbot <br className="hidden sm:block" />
+              Build an AI Chatbot
+              <br className="hidden sm:block" />
               in <span className="text-yellow-500">Minutes</span>
             </h1>
 
             <p className="text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto">
-              Deploy a conversational AI assistant in minutes. No coding, no complexity.
-              Just pure automation that scales with your business.
+              LinguaBot is the drop‑in AI widget that detects your customer’s language and responds in kind — automatically. No manual setup, no translation headaches. Just seamless support that speaks their language.
             </p>
           </div>
 
@@ -318,7 +317,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      
+
 
       {/* ================= TESTIMONIALS ================= */}
       <section className="py-24 px-6">
@@ -395,8 +394,8 @@ const LandingPage = () => {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-sm">© {currentYear} LinguaBot. All rights reserved.</div>
             <div className="flex gap-6 text-sm">
-              <Link  to='/privacy' className="hover:text-yellow-400 transition" >Privacy</Link>
-              <Link  to='/terms' className="hover:text-yellow-400 transition" >Terms</Link>
+              <Link to='/privacy' className="hover:text-yellow-400 transition" >Privacy</Link>
+              <Link to='/terms' className="hover:text-yellow-400 transition" >Terms</Link>
             </div>
           </div>
         </div>
