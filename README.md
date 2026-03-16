@@ -258,7 +258,12 @@ Copy the code and paste into your VS-code
 Install on Website**
 
 ```html
-<script src="https://linguabot.app/widget.js" data-bot-id="YOUR_BOT_ID"></script>
+<script>
+  window.LinguaBotConfig = {
+    publicKey: "lb_5d798ab2c56b35f337abaf8c3a043ec127135e0904b7804b"
+  };
+</script>
+<script src="https://linguabot-hackathon.onrender.com/widget.js"></script>
 ```
 
 **Step 5: It Just Works!**
@@ -278,7 +283,12 @@ Visitors can now chat in any language.
 
 <h1>Welcome to my site</h1>
 
-<script src="https://linguabot.digital/widget.js" data-bot-id="abc123xyz"></script>
+<script>
+  window.LinguaBotConfig = {
+    publicKey: "lb_5d798ab2c56b35f337abaf8c3a043ec127135e0904b7804b"
+  };
+</script>
+<script src="https://linguabot-hackathon.onrender.com/widget.js"></script>
 
 </body>
 </html>
@@ -289,24 +299,33 @@ Visitors can now chat in any language.
 ## 🌐 Lingo.dev Integration Flow
 
 ```javascript
-const userLocale = await lingo.detectLanguage(userMessage);
+// Inside chat.routes.js or a controller
+import { translateText } from '../services/lingo.service.js';
+import { generateClaudeResponse } from '../services/claude.service.js';
 
-const englishQuestion = await lingo.translateToEnglish(userMessage);
-
-const englishResponse = await claude.generateResponse(
-englishQuestion,
-knowledgeBase
-);
-
-const hindiResponse = await lingo.translateToLocale(
-englishResponse,
-"hi"
-);
-
-return {
-text: hindiResponse,
-locale: "hi"
-};
+async function handleChatMessage(userMessage, botId) {
+  // 1. Detect language (using Lingo.dev SDK)
+  const userLocale = await lingo.detectLanguage(userMessage); // e.g., "hi"
+  
+  // 2. Translate user message to English (if needed)
+  const englishQuery = userLocale === 'en' 
+    ? userMessage 
+    : await translateText(userMessage, userLocale, 'en');
+  
+  // 3. Get AI response from Claude (in English)
+  const englishResponse = await generateClaudeResponse(englishQuery, botId);
+  
+  // 4. Translate response back to user's language
+  const finalResponse = userLocale === 'en'
+    ? englishResponse
+    : await translateText(englishResponse, 'en', userLocale);
+  
+  // 5. Return with locale info for UI badge
+  return {
+    text: finalResponse,
+    locale: userLocale
+  };
+}
 ```
 
 ---
